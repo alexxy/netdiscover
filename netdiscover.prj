@@ -1,0 +1,138 @@
+# Anjuta Version 1.2.3 
+Compatibility Level: 1 
+
+<PROJECT_DESCRIPTION_START>
+Netdiscover is an active/passive network discover tool, developed mainly 
+for those wireless networks without dhcp server, it also works on 
+hub/switched networks. Its built on top of libcap, and libnet.<PROJECT_DESCRIPTION_END>
+<CONFIG_PROGS_START>
+<CONFIG_PROGS_END>
+<CONFIG_LIBS_START>
+<CONFIG_LIBS_END>
+<CONFIG_HEADERS_START>
+dnl check for pcap.h
+AC_CHECK_HEADER(pcap.h,,
+	AC_MSG_ERROR(Cannot find pcap.h , you need libpcap installed.))
+
+dnl check for libnet.h
+AC_CHECK_HEADER(libnet.h,,
+	AC_MSG_ERROR(Cannot find pcap.h , you need libnet installed.))<CONFIG_HEADERS_END>
+<CONFIG_CHARACTERISTICS_START>
+<CONFIG_CHARACTERISTICS_END>
+<CONFIG_LIB_FUNCS_START>
+<CONFIG_LIB_FUNCS_END>
+<CONFIG_ADDITIONAL_START>
+dnl get system information
+AC_CANONICAL_SYSTEM
+
+case "${target_os}" in
+  solaris*)
+    echo ===========================================================
+    echo Setting up build environment for ${target_cpu}${target_os}
+    echo ===========================================================
+    ;;
+  *)
+    AC_MSG_ERROR(OS: ${target_os} not supported)
+esac<CONFIG_ADDITIONAL_END>
+<CONFIG_FILES_START>
+<CONFIG_FILES_END>
+<MAKEFILE_AM_START>
+<MAKEFILE_AM_END>
+
+props.file.type=project
+
+anjuta.version=1.2.3
+anjuta.compatibility.level=1
+
+project.name=netdiscover
+project.type=GENERIC
+project.target.type=EXECUTABLE
+project.version=0.3-beta3
+project.author=Jaime Penalba Estebanez
+project.source.target=netdiscover
+project.has.gettext=0
+project.gui.command=
+project.programming.language=C
+project.excluded.modules=intl
+
+project.config.extra.modules.before=
+project.config.extra.modules.after=
+project.config.blocked=0
+project.config.disable.overwriting=1 0 0 0 0 0 0 0 0 
+
+project.menu.entry=netdiscover Version 0.1
+project.menu.group=Applications
+project.menu.comment=netdiscover Version 0.1
+project.menu.icon=
+project.menu.need.terminal=0
+
+project.configure.options=
+anjuta.program.arguments=
+preferences.build.option.jobs=0
+preferences.build.option.silent=0
+preferences.build.option.autosave=1
+preferences.make=make
+preferences.build.option.keep.going=1
+preferences.build.option.warn.undef=0
+preferences.autoformat.custom.style= -i8 -sc -bli0 -bl0 -cbi0 -ss
+preferences.indent.opening=0
+preferences.autoformat.disable=0
+preferences.indent.automatic=1
+preferences.use.tabs=1
+preferences.indent.size=3
+preferences.tabsize=3
+preferences.indent.closing=0
+
+module.include.name=include
+module.include.type=
+module.include.files=
+
+module.source.name=src
+module.source.type=
+module.source.files=\
+	main.c\
+	ifaces.c\
+	screen.c\
+	ifaces.h\
+	screen.h\
+	misc.c\
+	misc.h\
+	oui.h
+
+module.pixmap.name=pixmaps
+module.pixmap.type=
+module.pixmap.files=
+
+module.data.name=data
+module.data.type=
+module.data.files=
+
+module.help.name=help
+module.help.type=
+module.help.files=
+
+module.doc.name=doc
+module.doc.type=
+module.doc.files=
+
+module.po.files=
+
+compiler.options.supports=
+compiler.options.include.paths=
+compiler.options.library.paths=
+compiler.options.libraries=\
+	pthread\
+	pcap\
+	net
+compiler.options.libraries.selected=1 1 1 
+compiler.options.defines=\
+	DEBUG_LEVEL_2
+compiler.options.defines.selected=1 1 1 
+compiler.options.warning.buttons=0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 
+compiler.options.optimize.buttons=1 0 0 0 
+compiler.options.other.buttons=1 0 
+compiler.options.other.c.flags=
+compiler.options.other.l.flags=
+compiler.options.other.l.libs=
+
+project.src.paths=

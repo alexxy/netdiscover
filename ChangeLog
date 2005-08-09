@@ -1,0 +1,27 @@
+Netdiscover 0.3 (Currently working on it / beta3)
+	* Completing documentation for 0.3 final release
+	* Added support to change last octet of scanning host (option "n")
+	* Solaris and OpenBSD support added, also must work on other unixes
+	* Improved configure.in, now checks the system, libnet.h and pcap.h
+	* Added mac vendor database, and identifing
+	* Added other thread for screen refresh, also refresh time as parameter
+	* Fast scan mode, will only scan for .1, .100 and .254 of each network
+	* Improved arp packet forgery, now doesnt lose packets
+	* No more lamme ip changing at given interface, now you can browse
+	  while scanning, and ioctls where removed
+	* Code cleaned and commented / Currently working on it...
+	* A lot more of fixes for portability
+
+Netdiscover 0.2 beta (July 17, 2005)
+	* Added getopt for parameter handling
+	* Sleep time parameter added
+	* New passive mode detection
+	* New /8, /16, /24 scan mode
+	* New auto scan mode
+	* Added packet counters
+	* Scan progress added
+	* Nicer interface (no more scrolling!)
+	* Ignore packets with our mac address as source
+
+Netdiscover 0.1 beta (July 11, 2005)
+	* First beta version released

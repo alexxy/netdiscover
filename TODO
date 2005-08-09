@@ -1,0 +1,8 @@
+- cambiar -m a algo mas sencillo
+- poner auto iface
+- Send icmp to broadcast
+- Read range list from file
+- Add array to support custom fast scan
+- Must reorganize includes and functions?
+- Dont mix java and C, function name types
+- Better error handling

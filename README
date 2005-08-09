@@ -1,0 +1,36 @@
+Welcome to Netdiscover 0.3 beta. Netdiscover is a network address discovering
+tool, developed mainly for those wireless networks without dhcp server, but it
+also works on hub/switched networks. Its based on arp requests, it will send arp
+requests and sniff for replys.
+
+Its my first public C tool, so dont be too hard with me, if some parts on the
+code looks like offuscated or are unreadable, and feel free to mail me with 
+suggestions or patches at <jpenalbae@gmail.com>
+
+Also mail me for any bug or compilation error, note that gcc 3.x is needed, maybe
+gcc 2.95 will be supported if someone asks for it.
+
+
+Requeriments
+============
+
+ - libpcap
+ - libnet > 1.1.2
+ - only linux supported at the moment, sorry ;(
+ 
+
+Build
+=====
+
+$ ./configure
+$ make
+# make install
+
+
+Benchmarks
+==========
+
+The following tests were performed over 11b wireless network, using a 200 msec
+sleep time.
+
+ - 192.168.0.0/16 network scan: 1min 7secs, Bandwith usage: ~77 kbytes/sec

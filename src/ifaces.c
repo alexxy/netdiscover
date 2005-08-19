@@ -268,16 +268,10 @@ void ForgeArp(char *source_ip, char *dest_ip, char *disp)
 	static u_char sip[IP_ALEN];
 	static u_char dip[IP_ALEN];
 	
-	// get dst ip address
-   u_int32_t otherip;
+	// get src & dst ip address
+   u_int32_t otherip, myip;
    otherip = libnet_name2addr4(libnet, dest_ip, LIBNET_RESOLVE);
    memcpy(dip, (char*)&otherip, IP_ALEN);
- 
-   // get ipaddr
-   u_int32_t myip;
-   
-	//myip = libnet_get_ipaddr4(libnet);
-   //memcpy(sip, (char*)&myip, IP_ALEN);
 	
 	myip = libnet_name2addr4(libnet, source_ip, LIBNET_RESOLVE);
    memcpy(sip, (char*)&myip, IP_ALEN);

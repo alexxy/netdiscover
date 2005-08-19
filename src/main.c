@@ -224,10 +224,11 @@ void *SnifferThread(void *arg)
 
 /* Inject ARP Replys to the network */
 void *InjectArp(void *arg)
-{
+{	
+	struct t_data *datos;
+		
+	datos = (struct t_data *)arg;
 	sleep(2);
-	
-	struct t_data *datos = (struct t_data *)arg;
 	
 	if ( datos->autos != 1 )
 	{

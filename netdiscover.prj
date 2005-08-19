@@ -1,4 +1,4 @@
-# Anjuta Version 1.2.3 
+# Anjuta Version 1.2.4 
 Compatibility Level: 1 
 
 <PROJECT_DESCRIPTION_START>
@@ -41,13 +41,13 @@ esac<CONFIG_ADDITIONAL_END>
 
 props.file.type=project
 
-anjuta.version=1.2.3
+anjuta.version=1.2.4
 anjuta.compatibility.level=1
 
 project.name=netdiscover
 project.type=GENERIC
 project.target.type=EXECUTABLE
-project.version=0.3-beta3
+project.version=0.3-beta4
 project.author=Jaime Penalba Estebanez
 project.source.target=netdiscover
 project.has.gettext=0

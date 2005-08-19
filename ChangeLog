@@ -1,4 +1,8 @@
-Netdiscover 0.3 (Currently working on it / beta3)
+Netdiscover 0.3 (Currently working on it / beta4)
+	* Added customizable array for ips scanned on fast mode
+	* Some changes made arround scanning loops, and sleep time, the scan will be 
+	 	slower by default, but safer (longer sleeps to avoid packet loss)
+	* Changed usage parameters, to easyer way (thanks to SuD for the idea)
 	* Completing documentation for 0.3 final release
 	* Added support to change last octet of scanning host (option "n")
 	* Solaris and OpenBSD support added, also must work on other unixes

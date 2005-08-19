@@ -23,7 +23,7 @@
  */
  
 #define _GNU_SOURCE
-#define VERSION "0.3-beta3"
+#define VERSION "0.3-beta4"
 
 #include <stdio.h>
 #include <pthread.h>
@@ -49,6 +49,10 @@ void *InjectArp(void *arg);
 void *screen_refresh(void *arg);
 void scan_range(char *disp, char *sip);
 void usage();
+
+/* Last octect of ips scaned in fast mode */
+/* Add new networks if needed here */
+char *fast_ips[] = { "1", "100", "254", NULL};
 
 /* Common local networks to scan */
 /* Add new networks if needed here */
@@ -84,7 +88,6 @@ int main(int argc, char **argv)
 {
 	int c;
 	int esniff = 0;
-	int earp = 0;
 	int erange = 0;
 	struct t_data datos;
 	
@@ -97,7 +100,7 @@ int main(int argc, char **argv)
 	sprintf(current_network,"Starting.");
 	
 	/* Fetch parameters */
-	while ((c = getopt(argc, argv, "i:m:s:r:n:hf")) != EOF)
+	while ((c = getopt(argc, argv, "i:s:r:n:pfh")) != EOF)
 	{
 		switch (c)
 		{
@@ -106,27 +109,9 @@ int main(int argc, char **argv)
 				sprintf(datos.disp, "%s", optarg);
 				lnetInit(optarg);
 				break;
-			
-			case  'm':
-
-				if (strcmp(optarg, "passive") == 0)
-				{
-					esniff = 1;
-				}
-				else if (strcmp(optarg, "scan") == 0)
-				{
-					earp = 1;
-				}
-				else if (strcmp(optarg, "auto") == 0)
-				{
-					earp = 1;
-					datos.autos = 1;
-				}
-				else
-				{
-					printf("Unknown mode\n");
-					exit(1);
-				}
+				
+			case 'p':
+				esniff = 1;
 				break;
 			
 			case  's':
@@ -161,7 +146,7 @@ int main(int argc, char **argv)
 	init_lists();
 	system("clear");
 	
-	if ( ((earp == 1) && (erange == 1)) || ((earp == 1) && (datos.autos == 1)) )
+	if ( (erange == 1) )
 	{
 		if (pthread_create(&screen, NULL, screen_refresh, (void *)NULL))
 			perror("Could not create thread");
@@ -182,8 +167,15 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		usage(argv[0]);
-		exit(1);
+		datos.autos = 1;
+		
+		if (pthread_create(&screen, NULL, screen_refresh, (void *)NULL))
+			perror("Could not create thread");
+		
+		start_sniffer_thread(&datos);
+		start_arp_thread(&datos);
+		pthread_join(sniffer,NULL);
+		pthread_join(injection,NULL);
 	}
 
 
@@ -260,16 +252,62 @@ void *InjectArp(void *arg)
 }
 
 
+/* Scan a /24 network */
+void scan_net(char *disp, char *sip)
+{
+	int j;
+	char *test, *fromip;
+	
+	test = (char *) malloc ((sizeof(char)) * 16);
+	fromip = (char *) malloc ((sizeof(char)) * 16);
+	
+	sprintf(fromip,"%s.%i", sip, node);
+	
+	/* Check if fastmode is enabled */
+	if (fastmode != 1)
+	{
+		for (j=1; j<255; j++)
+		{
+			sprintf(test,"%s.%i", sip, j);
+			ForgeArp(fromip, test, disp);
+			
+			/* sleep time */
+			if (sleept != 0)
+				usleep(sleept * 1000);
+			else
+				usleep(1 * 1000);
+		}
+	}
+	else
+	{
+		j = 0;
+		
+		while (fast_ips[j] != NULL)
+		{
+			sprintf(test,"%s.%s", sip, fast_ips[j]);
+			ForgeArp(fromip, test, disp);
+			j++;
+			
+			/* sleep time */
+			if (sleept != 0)
+				usleep(sleept * 1000);
+			else
+				usleep(1 * 1000);
+		}
+		
+	}
+}
+
+
 /* Scan range, using arp requests */
 void scan_range(char *disp, char *sip)
 {
-	int i, j, k, e;
+	int i, k, e;
 	const char delimiters[] = ".,/";
 	char *a, *b, *c, *d;
-	char *test, *fromip, *tnet;
+	char *tnet, *net;
 
-	test = (char *) malloc ((sizeof(char)) * 16);
-	fromip = (char *) malloc ((sizeof(char)) * 16);
+	net = (char *) malloc ((sizeof(char)) * 16);
 	tnet = (char *) malloc ((sizeof(char)) * 19);
 	
 	sprintf(tnet, "%s", sip);
@@ -283,96 +321,30 @@ void scan_range(char *disp, char *sip)
 	/* Scan class C network */
 	if ( e == 24)
 	{
-		sprintf(fromip,"%s.%s.%s.%i", a, b, c, node);
-		sprintf(current_network,"%s.%s.%s.0/%i", a, b, c, e);
-		//setip(disp, test, "255.255.255.0");
+		sprintf(net, "%s.%s.%s", a, b, c);
+		sprintf(current_network,"%s.0/%i", net, e);
+		scan_net(disp, net);
 		
-		for (j=1; j<255; j++)
-		{
-			sprintf(test,"%s.%s.%s.%i", a, b, c, j);
-			ForgeArp(fromip, test, disp);	
-		}
-	}
-	/* Scan class B network */
+	}/* Scan class B network */
 	else if ( e == 16)
 	{
-	
 		for (i=0; i<256; i++)
 		{
-			sprintf(fromip,"%s.%s.%i.%i", a, b, i, node);
+			sprintf(net, "%s.%s.%i", a, b, i);
 			sprintf(current_network,"%s.%s.%i.0/%i", a, b, i, e);
-			
-			/* Check if fastmode is enabled */
-			if (fastmode != 1)
-			{
-				for (j=1; j<255; j++)
-				{
-					sprintf(test,"%s.%s.%i.%i", a, b, i, j);
-					ForgeArp(fromip, test, disp);	
-				}
-			}
-			else
-			{
-				sprintf(test,"%s.%s.%i.1", a, b, i);
-				ForgeArp(fromip, test, disp);	
-				
-				sprintf(test,"%s.%s.%i.100", a, b, i);
-				ForgeArp(fromip, test, disp);	
-				
-				sprintf(test,"%s.%s.%i.254", a, b, i);
-				ForgeArp(fromip, test, disp);	
-			}
-			
-			if (sleept != 0)
-			{
-				usleep(sleept * 1000);
-			}
-			else
-			{
-				usleep(1 * 1000);
-			}
+			scan_net(disp, net);
 		}
-	
-	}
-	/* Scan class A network */
+		
+	} /* Scan class A network */
 	else if ( e == 8)
 	{
 		for (k=0; k<256; k++)
 		{
 			for (i=0; i<256; i++)
 			{
-				sprintf(fromip,"%s.%i.%i.%i", a, k, i, node);
+				sprintf(net, "%s.%i.%i", a, k, i);
 				sprintf(current_network,"%s.%i.%i.0/%i", a, k, i, e);
-				
-				/* Check if fastmode is enabled */
-				if (fastmode != 1)
-				{
-					for (j=1; j<255; j++)
-					{
-						sprintf(test,"%s.%i.%i.%i", a, k, i, j);
-						ForgeArp(fromip, test, disp);	
-					}
-				}
-				else
-				{
-					sprintf(test,"%s.%i.%i.1", a, k, i);
-					ForgeArp(fromip, test, disp);	
-					
-					sprintf(test,"%s.%i.%i.100", a, k, i);
-					ForgeArp(fromip, test, disp);	
-					
-					sprintf(test,"%s.%i.%i.254", a, k, i);
-					ForgeArp(fromip, test, disp);	
-				}
-				
-				if (sleept != 0)
-				{
-					usleep(sleept * 1000);
-				}
-				else
-				{
-					usleep(1 * 1000);
-				}
+				scan_net(disp, net);
 			}
 		}
 	}
@@ -383,22 +355,20 @@ void scan_range(char *disp, char *sip)
 		exit(1);
 	}
 	
-	free(test);
 }
 
 
 void usage(char *comando)
 {
-	printf("Netdiscover %s [Active/passive reconnaissance tool]\n", VERSION);
-	printf("Written by: Jaime Penalba <jpenalbae@gmail.com>\n\n");
-	printf("Usage: %s -i device -m mode [-r range] [-s time] [-n node] [-f]\n", comando);
-	printf("  -i device: your network device\n");
-	printf("  -m modes\n");
-	printf("    auto: scan common networks (try it with -f)\n");
-	printf("    scan: scan given /8, /16 or /24 network range\n");
-	printf("    passive: do not send anything, only sniff\n");
-	printf("  -r range: 192.168.6.0/24, 192.168.0.0/16 or 10.0.0.0/8\n");
-	printf("  -s time: time to sleep between network change (miliseconds)\n");
-	printf("  -n node: last ip octet used for scanning (from 2 to 253)\n");
-	printf("  -f enable fastmode scan, saves a lot of time, recommended for auto\n");
+	printf("Netdiscover %s [Active/passive reconnaissance tool]\n"
+		"Written by: Jaime Penalba <jpenalbae@gmail.com>\n\n"
+		"Usage: %s -i device [-r range | -p] [-s time] [-n node] [-f]\n"
+		"  -i device: your network device\n"
+		"  -r range: scan a given range instead of auto scan. 192.168.6.0/24,/16,/8\n"
+		"  -p passive mode do not send anything, only sniff\n"
+		"  -s time: time to sleep between network change (miliseconds)\n"
+		"  -n node: last ip octet used for scanning (from 2 to 253)\n"
+		"  -f enable fastmode scan, saves a lot of time, recommended for auto\n\n"
+		"If -p or -r arent enabled, netdiscover will scan for common lan addresses\n",
+		VERSION, comando);
 }

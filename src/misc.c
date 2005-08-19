@@ -42,9 +42,6 @@ char *search_vendor(char *mac)
 		toupper(mac[0]), toupper(mac[1]), toupper(mac[3]),
 		toupper(mac[4]), toupper(mac[6]), toupper(mac[7]));
 	
-	//printf ("prefijo %s\n", tmac);
-	//exit(1);
-	
 	for (i=0;i<8436;i++)
 	{
 		if (strcmp(oui_table[i].prefix, tmac) == 0)

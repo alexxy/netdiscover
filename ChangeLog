@@ -1,7 +1,10 @@
 Netdiscover 0.3 (Currently working on it / beta4)
+	* Some screen display changes
+	* Supports decimal sleep times
+	* Some changes to support gcc 2.95
 	* Added customizable array for ips scanned on fast mode
 	* Some changes made arround scanning loops, and sleep time, the scan will be 
-	 	slower by default, but safer (longer sleeps to avoid packet loss)
+	  slower by default, but safer (longer sleeps to avoid packet loss)
 	* Changed usage parameters, to easyer way (thanks to SuD for the idea)
 	* Completing documentation for 0.3 final release
 	* Added support to change last octet of scanning host (option "n")

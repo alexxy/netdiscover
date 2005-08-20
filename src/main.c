@@ -57,8 +57,8 @@ char *fast_ips[] = { "1", "100", "254", NULL};
 /* Common local networks to scan */
 /* Add new networks if needed here */
 char *common_net[] = {
-	"172.16.0.0/16",
 	"192.168.0.0/16",
+	"172.16.0.0/16",
 	"172.26.0.0/16",
 	"172.27.0.0/16",
 	"172.17.0.0/16",
@@ -80,8 +80,8 @@ char *common_net[] = {
 
 
 pthread_t injection, sniffer, screen;
-int sleept, fastmode, node;
-
+int fastmode, node;
+long sleept;
 
 /* main, what is this? */
 int main(int argc, char **argv)
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 	
 	datos.sip = NULL;
 	datos.autos = 0;
-	sleept = 0;
+	sleept = 99;
 	node = 67;
 	
 	current_network = (char *) malloc ((sizeof(char)) * 16);
@@ -115,11 +115,11 @@ int main(int argc, char **argv)
 				break;
 			
 			case  's':
-				sleept = (int)atoi(optarg);
+				sleept = atol(optarg);
 				break;
 			
 			case  'n':
-				node = (int)atoi(optarg);
+				node = atoi(optarg);
 				break;
 			
 			case  'r':
@@ -273,7 +273,7 @@ void scan_net(char *disp, char *sip)
 			ForgeArp(fromip, test, disp);
 			
 			/* sleep time */
-			if (sleept != 0)
+			if (sleept != 99)
 				usleep(sleept * 1000);
 			else
 				usleep(1 * 1000);
@@ -290,7 +290,7 @@ void scan_net(char *disp, char *sip)
 			j++;
 			
 			/* sleep time */
-			if (sleept != 0)
+			if (sleept != 99)
 				usleep(sleept * 1000);
 			else
 				usleep(1 * 1000);

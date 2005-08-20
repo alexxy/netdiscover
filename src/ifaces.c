@@ -77,8 +77,14 @@ void StartSniffer(char *disp)
 	//u_char *args = NULL;
 	
 	descr = pcap_open_live(disp, BUFSIZ, 1, PCAP_TOUT, errbuf);
-	if(descr == NULL) { printf("pcap_open_live(): %s\n", errbuf); exit(1); }
-	pcap_loop(descr, -1, ProccessPacket, NULL);
+	
+	if(descr == NULL) 
+	{
+		printf("pcap_open_live(): %s\n", errbuf);
+		exit(1);
+	}
+	
+	pcap_loop(descr, -1, (pcap_handler)ProccessPacket, NULL);
 
 }
 

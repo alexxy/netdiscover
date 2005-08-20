@@ -65,13 +65,13 @@ void fill_screen()
 	/* Print Captured ARP Replys */
 	printf(" %d Captured ARP Reply packets, from %d hosts.   Total size: %d\n"
 				" ______________________________________________________________________________\n"
-				"|  IP            At MAC Address      Count  Length   MAC Vendor                |\n"
+				"|  IP            At MAC Address      Count  Len   MAC Vendor                   |\n"
 				" ------------------------------------------------------------------------------\n",
 				arprep_count->count, arprep_count->hosts, arprep_count->length );
 	
 	while( arprep_l != NULL )
 	{
-		printf("  %s\t %s\t%d     %d    %s\n", arprep_l->sip, 
+		printf("  %s\t %s     %02d   %03d   %s\n", arprep_l->sip, 
 					arprep_l->header->smac, arprep_l->count, 
 					arprep_l->header->length, arprep_l->vendor );
 		

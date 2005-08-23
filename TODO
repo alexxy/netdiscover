@@ -1,4 +1,3 @@
-- More loops, add packet resending
 - Fix OpenBSD high cpu load
 - Sacar arrays de configuracion
 - poner auto iface y comprobar el interface

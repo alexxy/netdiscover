@@ -7,8 +7,8 @@ Its my first public C tool, so dont be too hard with me, if some parts on the
 code looks like offuscated or are unreadable, and feel free to mail me with 
 suggestions or patches at <jpenalbae@gmail.com>
 
-Also mail me for any bug or compilation error, note that gcc 3.x is needed, maybe
-gcc 2.95 will be supported if someone asks for it.
+Also mail me for any bug or compilation error, it must compile with gcc 2.95 or
+newer.
 
 
 Requeriments
@@ -16,7 +16,7 @@ Requeriments
 
  - libpcap
  - libnet > 1.1.2
- - only linux supported at the moment, sorry ;(
+ - Tested to work on Linux, Solaris and OpenBSD, also other unixes may work
  
 
 Build

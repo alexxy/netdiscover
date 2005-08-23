@@ -1,4 +1,7 @@
 Netdiscover 0.3 (Currently working on it / beta4)
+	* Supress sleep time between each arp request, instead sleep between each
+	  network scanned, also caled the hardcore mode :) (like in older betas)
+	* Added request count option (-c switch)
 	* Some screen display changes
 	* Supports decimal sleep times
 	* Some changes to support gcc 2.95

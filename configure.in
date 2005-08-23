@@ -47,7 +47,7 @@ AC_CHECK_HEADER(pcap.h,,
 
 dnl check for libnet.h
 AC_CHECK_HEADER(libnet.h,,
-	AC_MSG_ERROR(Cannot find pcap.h , you need libnet installed.))
+	AC_MSG_ERROR(Cannot find libnet.h , you need libnet installed.))
 
 
 dnl Set PACKAGE SOURCE DIR in config.h.

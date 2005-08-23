@@ -1,4 +1,5 @@
 Netdiscover 0.3 (Currently working on it / beta4)
+	* Fixed header checks on configure.in, thanks to Charlie Brady for reporting
 	* Supress sleep time between each arp request, instead sleep between each
 	  network scanned, also caled the hardcore mode :) (like in older betas)
 	* Added request count option (-c switch)

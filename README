@@ -10,6 +10,11 @@ suggestions or patches at <jpenalbae@gmail.com>
 Also mail me for any bug or compilation error, it must compile with gcc 2.95 or
 newer.
 
+An excesive cpu comsuption happens on OpenBSD, and maybe also on others BSDs,
+im looking for it, also mail me with your fix. It looks like some shit arround 
+pcap_loop().
+
+
 
 Requeriments
 ============
@@ -27,10 +32,83 @@ $ make
 # make install
 
 
-Benchmarks
-==========
+Usage
+=====
 
-The following tests were performed over 11b wireless network, using a 200 msec
-sleep time.
 
- - 192.168.0.0/16 network scan: 1min 7secs, Bandwith usage: ~77 kbytes/sec
+Usage: ./netdiscover -i device [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]
+
+  -i device  (mandatory)
+    The network device to sniff at and inject packets
+
+  -r range
+    Scan a given range instead of auto scan. Valid range values are:
+    192.168.0.0/24, 192.168.0.0/16 or 192.168.0.0/8
+
+  -p
+    Enable passive mode do not send anything, only sniff
+
+  -s time
+    It will sleep given time in milliseconds between each arp request
+    injection. (default 1)
+
+  -c count
+    Number of times to send each arp reques. Usefull for networks with
+    packet loss, so it will scan given times for each host.
+
+  -n node
+    Last ip octet used for scanning as source host, you can change it
+    if the default host is already used (from 2 to 253) (default 66)
+
+  -S
+    Enable sleep time supression betwen each request. I will sleep each 255
+    scanned hosts instead of do it by each one, this mode was used on 0.3 beta4
+    and older releases. Avoid this option on networks with packet lossing,
+    or in wireless networks with low signal level. (also called hardcore mode)
+
+  -f
+    Enable fastmode scan, it will only scan for hosts .1, .100, .254 on each
+    network, usefull when searching for addresses being used, after find one
+    you can make a specific range scan to see online boxes.
+    Scanned hosts can be easily modified at fast_ips[] array on main.c source.
+
+If -p or -r options are not used, netdiscover will automatically scan for common
+lan addresses. Those address lists can be modified at common_net[] on main.c
+
+
+Examples
+========
+
+Scan common lan addresses on eth0
+# netdiscover -i eth0
+
+Fast scan common lan addresses on eth0 (search only for gateways)
+# netdiscover -i eth0 -f
+
+Scan some fixed ranges
+# netdiscover -i eth0 172.26.0.0/24
+# netdiscover -i eth0 192.168.0.0/16
+# netdiscover -i eth0 10.0.0.0/8
+
+Scan common lan addresses with sleep time 0.5 instead of default 1
+# netdiscover -i eth0 -s 0.5
+
+Scan fixed range on fast mode with sleep time 0.5 instead of default 1
+# netdiscover -i eth0 192.168.0.0/16 -f -s 0.5
+
+Only sniff for arp traffic, dont send nothing
+# netdiscover -i eth0 -p
+
+Scan for common lan addresses using old hardcore mode (much more faster, but
+avoid it on networks with bad link)
+# netdiscover -i eth0 -S
+
+More parameter combinations are possible, these are only some examples.
+
+
+Bugs & Contact
+==============
+
+Feel free to mail me with any problem, bug, suggestions or fixes at:
+Jaime Penalba <jpenalbae@gmail.com>
+

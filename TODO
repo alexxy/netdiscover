@@ -1,6 +1,5 @@
 - Fix OpenBSD high cpu load
 - Sacar arrays de configuracion
-- poner auto iface y comprobar el interface
 - Send icmp to broadcast
 - Read range list from file
 - Must reorganize includes and functions?

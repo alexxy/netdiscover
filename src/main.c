@@ -92,6 +92,7 @@ int main(int argc, char **argv)
 	struct t_data datos;
 	
 	datos.sip = NULL;
+	datos.disp = NULL;
 	datos.autos = 0;
 	sleept = 99;
 	node = 67;
@@ -108,7 +109,6 @@ int main(int argc, char **argv)
 			case 'i':
 				datos.disp = (char *) malloc (sizeof(char) * strlen(optarg));
 				sprintf(datos.disp, "%s", optarg);
-				lnetInit(optarg);
 				break;
 				
 			case 'p':
@@ -151,7 +151,19 @@ int main(int argc, char **argv)
 		}
 	}
 
+	/* Check for uid 0 */
+	if ( getuid() && geteuid() )
+	{
+		printf("You must be root to run this.\n");
+		exit(1);
+	}
 	
+	/* If no iface was specified, autoselect one */
+	if (datos.disp == NULL)
+		datos.disp = pcap_lookupdev(errbuf);
+	
+	
+	lnetInit(datos.disp);
 	init_lists();
 	system("clear");
 	

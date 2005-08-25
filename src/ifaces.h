@@ -46,7 +46,7 @@ extern "C"
 	
 	
 	// Shitty globals
-	char *ourmac;
+	char *ourmac, errbuf[PCAP_ERRBUF_SIZE];
 	
 	// Sniffer Functions
 	void StartSniffer(char *);

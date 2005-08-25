@@ -62,7 +62,6 @@
 
 /* Shitty globals */
 libnet_t *libnet;
-char *ourmac;
 static u_char smac[ETH_ALEN];
 struct p_header *temp_header;
 
@@ -70,12 +69,7 @@ struct p_header *temp_header;
 /* Start Sniffing on given iface */
 void StartSniffer(char *disp)
 {
-	//printf("Sniffing at: %s\n", disp);
-	
-	char errbuf[PCAP_ERRBUF_SIZE];
 	pcap_t *descr;
-	//u_char *args = NULL;
-	
 	descr = pcap_open_live(disp, BUFSIZ, 1, PCAP_TOUT, errbuf);
 	
 	if(descr == NULL) 
@@ -244,8 +238,14 @@ void lnetInit(char *disp)
 	
    char error[LIBNET_ERRBUF_SIZE];
 	libnet = NULL;
-	
+		
 	libnet = libnet_init(LIBNET_LINK, disp, error);
+	
+	if (libnet == NULL)
+	{
+		printf("libnet_init() falied: %s", error);
+		exit(EXIT_FAILURE);
+	}
 	
 	if (ourmac == NULL)
 	{

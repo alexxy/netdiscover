@@ -38,7 +38,7 @@ Usage
 
 Usage: ./netdiscover [-i device] [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]
 
-  -i device  (mandatory)
+  -i device
     The network device to sniff at and inject packets
 
   -r range

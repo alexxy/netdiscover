@@ -36,7 +36,7 @@ Usage
 =====
 
 
-Usage: ./netdiscover -i device [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]
+Usage: ./netdiscover [-i device] [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]
 
   -i device  (mandatory)
     The network device to sniff at and inject packets
@@ -111,4 +111,3 @@ Bugs & Contact
 
 Feel free to mail me with any problem, bug, suggestions or fixes at:
 Jaime Penalba <jpenalbae@gmail.com>
-

@@ -44,8 +44,8 @@ struct t_data {
 
 void start_sniffer_thread(struct t_data *datos);
 void start_arp_thread(struct t_data *datos);
-void *SnifferThread(void *arg);
-void *InjectArp(void *arg);
+void *sniffer_thread(void *arg);
+void *inject_arp(void *arg);
 void *screen_refresh(void *arg);
 void scan_range(char *disp, char *sip);
 void usage();
@@ -160,8 +160,15 @@ int main(int argc, char **argv)
 	
 	/* If no iface was specified, autoselect one */
 	if (datos.disp == NULL)
+	{
 		datos.disp = pcap_lookupdev(errbuf);
 	
+		if (datos.disp == NULL)
+		{
+			printf("Couldn't find default device: %s\n", errbuf);
+			exit(1);
+		}
+	}
 	
 	lnetInit(datos.disp);
 	init_lists();
@@ -171,8 +178,9 @@ int main(int argc, char **argv)
 	{
 		if (pthread_create(&screen, NULL, screen_refresh, (void *)NULL))
 			perror("Could not create thread");
+		if (pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos))
+			perror("Could not create thread");
 		
-		start_sniffer_thread(&datos);
 		start_arp_thread(&datos);
 		pthread_join(sniffer,NULL);
 		pthread_join(injection,NULL);
@@ -181,9 +189,10 @@ int main(int argc, char **argv)
 	{
 		if (pthread_create(&screen, NULL, screen_refresh, (void *)NULL))
 			perror("Could not create thread");
+		if (pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos))
+			perror("Could not create thread");
 		
 		current_network = "(passive)";
-		start_sniffer_thread(&datos);
 		pthread_join(sniffer,NULL);
 	}
 	else
@@ -192,8 +201,9 @@ int main(int argc, char **argv)
 		
 		if (pthread_create(&screen, NULL, screen_refresh, (void *)NULL))
 			perror("Could not create thread");
+		if (pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos))
+			perror("Could not create thread");
 		
-		start_sniffer_thread(&datos);
 		start_arp_thread(&datos);
 		pthread_join(sniffer,NULL);
 		pthread_join(injection,NULL);
@@ -207,18 +217,8 @@ int main(int argc, char **argv)
 void start_arp_thread(struct t_data *datos)
 {
 	
-	if (pthread_create(&injection, NULL, InjectArp, (void *)datos))
+	if (pthread_create(&injection, NULL, inject_arp, (void *)datos))
 		perror("Could not create thread");
-	
-}
-
-
-void start_sniffer_thread(struct t_data *datos)
-{
-	
-	if (pthread_create(&sniffer, NULL, SnifferThread, (void *)datos))
-		perror("Could not create thread");
-	
 	
 }
 
@@ -235,16 +235,16 @@ void *screen_refresh(void *arg)
 }
 
 
-void *SnifferThread(void *arg)
+void *sniffer_thread(void *arg)
 {
-	struct t_data *datos = (struct t_data *)arg;
-	StartSniffer(datos->disp);
+	//struct t_data *datos = (struct t_data *)arg;
+	//start_sniffer(datos->disp);
 	return NULL;
 }
 
 
 /* Inject ARP Replys to the network */
-void *InjectArp(void *arg)
+void *inject_arp(void *arg)
 {	
 	struct t_data *datos;
 		

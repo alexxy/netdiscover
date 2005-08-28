@@ -42,6 +42,7 @@
 #include "screen.h"
 #include "ifaces.h"
 
+
 /* tcpdump header (ether.h) defines ETHER_HDRLEN)  */
 #ifndef ETHER_HDRLEN 
 #define ETHER_HDRLEN 14
@@ -60,6 +61,14 @@
 #endif
 
 
+/* Threads data structure */
+struct t_data {
+	char *disp;
+	char *sip;
+	int autos;
+};
+
+
 /* Shitty globals */
 libnet_t *libnet;
 static u_char smac[ETH_ALEN];
@@ -67,10 +76,13 @@ struct p_header *temp_header;
 
 
 /* Start Sniffing on given iface */
-void StartSniffer(char *disp)
+void *start_sniffer(void *args)
 {
 	pcap_t *descr;
-	descr = pcap_open_live(disp, BUFSIZ, 1, PCAP_TOUT, errbuf);
+	struct bpf_program fp;	
+	struct t_data *datos = (struct t_data *)args;
+
+	descr = pcap_open_live(datos->disp, BUFSIZ, 1, PCAP_TOUT, errbuf);
 	
 	if(descr == NULL) 
 	{
@@ -78,42 +90,27 @@ void StartSniffer(char *disp)
 		exit(1);
 	}
 	
-	pcap_loop(descr, -1, (pcap_handler)ProccessPacket, NULL);
+	pcap_compile(descr, &fp, "arp", 0, 0);
+	pcap_setfilter(descr, &fp);
+	
+	pcap_loop(descr, -1, (pcap_handler)proccess_packet, NULL);
 
+	return NULL;
 }
 
 
 /* Handle Headers and IP data */
 /* from the recived pcap_loop packet */
-void ProccessPacket(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
+void proccess_packet(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
         packet)
 {
-	
 	u_int16_t type = handle_ethernet(args,pkthdr,packet);
 	
-	if(type == ETHERTYPE_IP)
-	{	
-		//printf("Type: IP\n\n");
-		//handle_IP(args,pkthdr,packet);
-		
-	} else if(type == ETHERTYPE_ARP)
+	if(type == ETHERTYPE_ARP)
 	{
-		//printf("Type: ARP\n\n");
-		handle_ARP(pkthdr,packet);
-		
+		handle_ARP(pkthdr,packet);	
 		print_screen();
-
-		
-	} else if(type == ETHERTYPE_REVARP)
-	{
-		printf("Type: RARP\n\n");
-		print_screen();
-		
- 	} else
-	{
-		//printf("Type: Unknown\n\n");
 	}
-	
 }
 
 

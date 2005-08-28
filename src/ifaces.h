@@ -49,8 +49,8 @@ extern "C"
 	char *ourmac, errbuf[PCAP_ERRBUF_SIZE];
 	
 	// Sniffer Functions
-	void StartSniffer(char *);
-	void ProccessPacket(u_char *, struct pcap_pkthdr *,const u_char *);
+	void *start_sniffer(void *);
+	void proccess_packet(u_char *, struct pcap_pkthdr *,const u_char *);
 	void handle_ARP(struct pcap_pkthdr *, const u_char *);
 	u_int16_t handle_ethernet(u_char *, struct pcap_pkthdr *, const u_char *);
 		

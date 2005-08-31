@@ -39,7 +39,7 @@ struct arp_req_l *first_arpreq, *last_arpreq;
 struct arp_rep_l *first_arprep, *last_arprep;
 struct arp_rep_c *arprep_count;
 
-/* Clear and fill the screen */
+/* Clear and fill the screen // */
 void print_screen()
 {
 	fprintf( stderr, "\33[1;1H" );
@@ -62,17 +62,23 @@ void fill_screen()
 				"                                        \n",
 				current_network, ourmac);
 	
-	/* Print Captured ARP Replys */
+	/* Print Header and counters */
 	printf(" %d Captured ARP Reply packets, from %d hosts.   Total size: %d\n"
 				" ______________________________________________________________________________\n"
 				"|  IP            At MAC Address      Count  Len   MAC Vendor                   |\n"
 				" ------------------------------------------------------------------------------\n",
 				arprep_count->count, arprep_count->hosts, arprep_count->length );
 	
+	
+	/* Print each found station */
 	while( arprep_l != NULL )
 	{
-		printf("  %s\t %s     %02d   %03d   %s\n", arprep_l->sip, 
-					arprep_l->header->smac, arprep_l->count, 
+		printf("  %s\t %02x:%02x:%02x:%02x:%02x:%02x     ", arprep_l->sip, 
+					arprep_l->header->smac[0], arprep_l->header->smac[1],
+					arprep_l->header->smac[2], arprep_l->header->smac[3],
+					arprep_l->header->smac[4], arprep_l->header->smac[5]);
+		
+		printf("%02d   %03d   %s\n", arprep_l->count, 
 					arprep_l->header->length, arprep_l->vendor );
 		
 		arprep_l = arprep_l->next;
@@ -123,8 +129,8 @@ void arprep_add(struct arp_rep_l *new)
 		/* Check for dupe packets */
 		while ( arprep_l != NULL && i != 1 )
 		{
-			if ( ( strcmp(arprep_l->sip, new->sip) == 0 ) 
-					&& ( strcmp(arprep_l->header->smac, new->header->smac) == 0 ) )
+			if ( ( strcmp(arprep_l->sip, new->sip) == 0 ) &&
+				( memcmp(arprep_l->header->smac, new->header->smac, 6) == 0 ) )
 			{
 				arprep_l->count += 1;
 				arprep_l->header->length += new->header->length;

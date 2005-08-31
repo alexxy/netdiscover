@@ -1,4 +1,5 @@
 Netdiscover 0.3 (Currently working on it / beta4)
+	* Some code cleaning / commenting done
 	* If no interface is specified will autoselect firstone available
 	* Better error handling, including interface and id checking
 	* Fixed header checks on configure.in, thanks to Charlie Brady for reporting

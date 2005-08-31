@@ -36,8 +36,8 @@ struct arp_rep_c {
  
 /* holds headers packet data */
 struct p_header {
-	char *smac;
-	char *dmac;
+	unsigned char smac[6];
+	unsigned char dmac[6];
 	unsigned int length;
 };
  

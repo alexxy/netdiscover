@@ -31,18 +31,18 @@
 #include "oui.h"
 
 
-char *search_vendor(char *mac)
+char *search_vendor(unsigned char mac[6])
 {
-	char *tmac;
+	char tmac[6];
 	int i = 0;
 	
-	tmac = (char *) malloc (sizeof(char) * 6);
+	sprintf(tmac, "%02x%02x%02x", mac[0], mac[1], mac[2]);
+
+    /* Convert mac prefix to upper */
+    for (i=0; i<6; i++)
+        tmac[i] = toupper(tmac[i]);
 	
-	sprintf(tmac, "%c%c%c%c%c%c",
-		toupper(mac[0]), toupper(mac[1]), toupper(mac[3]),
-		toupper(mac[4]), toupper(mac[6]), toupper(mac[7]));
-	
-	for (i=0;i<8436;i++)
+	for (i=0; i<8436; i++)
 	{
 		if (strcmp(oui_table[i].prefix, tmac) == 0)
 			return oui_table[i].vendor;

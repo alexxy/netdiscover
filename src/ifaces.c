@@ -69,7 +69,7 @@ struct t_data {
 
 /* Shitty globals */
 libnet_t *libnet;
-static u_char smac[ETH_ALEN];
+unsigned char smac[ETH_ALEN];
 struct p_header *temp_header;
 
 
@@ -90,7 +90,7 @@ void *start_sniffer(void *args)
 		exit(1);
 	}
 	
-	/* Set pcap filter */
+	/* Set pcap filter for arp only */
 	pcap_compile(descr, &fp, "arp", 0, 0);
 	pcap_setfilter(descr, &fp);
 	
@@ -102,7 +102,7 @@ void *start_sniffer(void *args)
 
 
 /* Handle Headers and IP data */
-/* from the recived pcap_loop packet */
+/* from the recived pcap_loop packet 
 void proccess_packet(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
         packet)
 {
@@ -113,11 +113,31 @@ void proccess_packet(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
 		handle_ARP(pkthdr,packet);	
 		print_screen();
 	}
+} */
+
+
+/* Handle packets recived from pcap_loop */
+void proccess_packet(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
+        packet)
+{
+	struct p_header *new_header;
+	
+	/* Get packet header data and fill struct */
+	new_header = (struct p_header *) malloc (sizeof(struct p_header));
+	memcpy(new_header->dmac, packet, 6);	  /* dest mac    */
+	memcpy(new_header->smac, packet + 6, 6); /* src mac     */
+	new_header->length = sizeof(packet);	  /* Packet size */
+	
+	/* Discard packets with our mac as source */
+	if (memcmp(new_header->smac, smac, 6) != 0)
+	{
+		temp_header = new_header;
+		handle_ARP(pkthdr,packet);
+	}
 }
 
 
-
-/* Handle Ethernet Header from Packet and return type */
+/* Handle Ethernet Header from Packet and return type 
 u_int16_t handle_ethernet
         (u_char *args, struct pcap_pkthdr *pkthdr, const u_char *packet)
 {
@@ -136,7 +156,7 @@ u_int16_t handle_ethernet
 		return -1;
 	}
 
-	/* lets start with the ether header... */
+	// lets start with the ether header...
 	eptr = (struct ether_header *) packet;
 	ether_type = ntohs(eptr->ether_type);
 	
@@ -159,7 +179,7 @@ u_int16_t handle_ethernet
 		
 	}
 	
-	/* Ignore if is from us */
+	// Ignore if is from us 
 	if (strcmp(ourmac, from ) == 0)
 	{
 		return 0x069;
@@ -185,7 +205,7 @@ u_int16_t handle_ethernet
 	temp_header = new_header;
 	
 	return ether_type;
-}
+} */
 
 
 /* Prints Info about the arp packet */

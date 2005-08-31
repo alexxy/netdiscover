@@ -23,7 +23,7 @@
  */
  
 #define _GNU_SOURCE
-#define VERSION "0.3-beta4"
+#define VERSION "0.3-beta5"
 
 #include <stdio.h>
 #include <pthread.h>
@@ -42,16 +42,13 @@ struct t_data {
 };
 
 
-void start_sniffer_thread(struct t_data *datos);
-void start_arp_thread(struct t_data *datos);
-void *sniffer_thread(void *arg);
 void *inject_arp(void *arg);
 void *screen_refresh(void *arg);
 void scan_range(char *disp, char *sip);
 void usage();
 
 /* Last octect of ips scaned in fast mode */
-/* Add new networks if needed here */
+/* Add new addr if needed here */
 char *fast_ips[] = { "1", "100", "254", NULL};
 
 /* Common local networks to scan */
@@ -83,7 +80,8 @@ pthread_t injection, sniffer, screen;
 int fastmode, pcount, node, ssleep;
 long sleept;
 
-/* main, what is this? */
+
+/* main, fetch params and start */
 int main(int argc, char **argv)
 {
 	int c;
@@ -150,7 +148,7 @@ int main(int argc, char **argv)
 				break;
 		}
 	}
-
+	
 	/* Check for uid 0 */
 	if ( getuid() && geteuid() )
 	{
@@ -158,7 +156,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	
-	/* If no iface was specified, autoselect one */
+	/* If no iface was specified, autoselect one. exit, if no one available */
 	if (datos.disp == NULL)
 	{
 		datos.disp = pcap_lookupdev(errbuf);
@@ -170,59 +168,42 @@ int main(int argc, char **argv)
 		}
 	}
 	
-	lnetInit(datos.disp);
+	/* Init some stuff */
+	lnet_init(datos.disp);
 	init_lists();
 	system("clear");
 	
-	if ( (erange == 1) )
+	/* If no mode was selected, enable auto scan */
+	if ((erange != 1) && (esniff != 1))
 	{
-		if (pthread_create(&screen, NULL, screen_refresh, (void *)NULL))
-			perror("Could not create thread");
-		if (pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos))
-			perror("Could not create thread");
-		
-		start_arp_thread(&datos);
-		pthread_join(sniffer,NULL);
-		pthread_join(injection,NULL);
+		datos.autos = 1;
 	}
-	else if (esniff ==  1)
+	
+	/* Start the execution */
+	if (pthread_create(&screen, NULL, screen_refresh, (void *)NULL))
+		perror("Could not create screen thread");
+	if (pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos))
+		perror("Could not create sniffer thread");
+	
+	if (esniff == 1)
 	{
-		if (pthread_create(&screen, NULL, screen_refresh, (void *)NULL))
-			perror("Could not create thread");
-		if (pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos))
-			perror("Could not create thread");
-		
 		current_network = "(passive)";
 		pthread_join(sniffer,NULL);
 	}
 	else
 	{
-		datos.autos = 1;
+		if (pthread_create(&injection, NULL, inject_arp, (void *)&datos))
+			perror("Could not create injection thread");
 		
-		if (pthread_create(&screen, NULL, screen_refresh, (void *)NULL))
-			perror("Could not create thread");
-		if (pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos))
-			perror("Could not create thread");
-		
-		start_arp_thread(&datos);
 		pthread_join(sniffer,NULL);
-		pthread_join(injection,NULL);
 	}
-
-
+	
+	
 	return 0;
 }
 
 
-void start_arp_thread(struct t_data *datos)
-{
-	
-	if (pthread_create(&injection, NULL, inject_arp, (void *)datos))
-		perror("Could not create thread");
-	
-}
-
-
+/* Refresh screen function called by screen thread */
 void *screen_refresh(void *arg)
 {
 	
@@ -232,14 +213,6 @@ void *screen_refresh(void *arg)
 		sleep(1);
 	}
 	
-}
-
-
-void *sniffer_thread(void *arg)
-{
-	//struct t_data *datos = (struct t_data *)arg;
-	//start_sniffer(datos->disp);
-	return NULL;
 }
 
 
@@ -268,13 +241,13 @@ void *inject_arp(void *arg)
 	}
 	
 	sprintf(current_network,"Finished!");
-	lnetDestroy();
+	lnet_destroy();
 	
 	return NULL;
 }
 
 
-/* Scan a /24 network */
+/* Scan 255 hosts network */
 void scan_net(char *disp, char *sip)
 {
 	int x, j;
@@ -285,6 +258,7 @@ void scan_net(char *disp, char *sip)
 	
 	sprintf(fromip,"%s.%i", sip, node);
 	
+	/* Repeat given times */
 	for (x=0;x<pcount;x++)
 	{
 	
@@ -294,11 +268,12 @@ void scan_net(char *disp, char *sip)
 			for (j=1; j<255; j++)
 			{
 				sprintf(test,"%s.%i", sip, j);
-				ForgeArp(fromip, test, disp);
+				forge_arp(fromip, test, disp);
 				
+				/* Check sleep time supression */
 				if (ssleep != 1)
 				{
-					/* sleep time */
+					/* Sleep time */
 					if (sleept != 99)
 						usleep(sleept * 1000);
 					else
@@ -313,12 +288,13 @@ void scan_net(char *disp, char *sip)
 			while (fast_ips[j] != NULL)
 			{
 				sprintf(test,"%s.%s", sip, fast_ips[j]);
-				ForgeArp(fromip, test, disp);
+				forge_arp(fromip, test, disp);
 				j++;
 				
+				/* Check sleep time supression */
 				if (ssleep != 1)
 				{
-					/* sleep time */
+					/* Sleep time */
 					if (sleept != 99)
 						usleep(sleept * 1000);
 					else
@@ -328,8 +304,10 @@ void scan_net(char *disp, char *sip)
 			
 		}
 		
+		/* If sleep supression is enabled, sleep each 255 hosts */
 		if (ssleep == 1)
 		{
+			/* Sleep time */
 			if (sleept != 99)
 				usleep(sleept * 1000);
 			else
@@ -399,6 +377,7 @@ void scan_range(char *disp, char *sip)
 }
 
 
+/* Print usage instructions */
 void usage(char *comando)
 {
 	printf("Netdiscover %s [Active/passive reconnaissance tool]\n"

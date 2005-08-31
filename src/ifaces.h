@@ -55,9 +55,9 @@ extern "C"
 	u_int16_t handle_ethernet(u_char *, struct pcap_pkthdr *, const u_char *);
 		
 	// ARP Generation & Injection
-	void lnetInit(char *);
-	void ForgeArp(char *, char *, char *);
-	void lnetDestroy();
+	void lnet_init(char *);
+	void forge_arp(char *, char *, char *);
+	void lnet_destroy();
 
 #ifdef __cplusplus
 }

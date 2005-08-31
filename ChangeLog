@@ -1,5 +1,5 @@
 Netdiscover 0.3 (Currently working on it / beta4)
-	* If no interface is specified will autoselec firstone available
+	* If no interface is specified will autoselect firstone available
 	* Better error handling, including interface and id checking
 	* Fixed header checks on configure.in, thanks to Charlie Brady for reporting
 	* Supress sleep time between each arp request, instead sleep between each
@@ -22,7 +22,6 @@ Netdiscover 0.3 (Currently working on it / beta4)
 	* Improved arp packet forgery, now doesnt lose packets
 	* No more lamme ip changing at given interface, now you can browse
 	  while scanning, and ioctls where removed
-	* Code cleaned and commented / Currently working on it...
 	* A lot more of fixes for portability
 
 Netdiscover 0.2 beta (July 17, 2005)

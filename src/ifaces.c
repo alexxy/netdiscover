@@ -35,15 +35,13 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <pcap.h>
-#include <errno.h>
 #include <time.h>
 #include <libnet.h>
 #include "screen.h"
 #include "ifaces.h"
 
 
-/* tcpdump header (ether.h) defines ETHER_HDRLEN)  */
+/* defines ETHER_HDRLEN */
 #ifndef ETHER_HDRLEN 
 #define ETHER_HDRLEN 14
 #endif
@@ -80,19 +78,23 @@ void *start_sniffer(void *args)
 {
 	pcap_t *descr;
 	struct bpf_program fp;	
-	struct t_data *datos = (struct t_data *)args;
-
+	struct t_data *datos; 
+		
+	datos = (struct t_data *)args;
+	/* Open interface */
 	descr = pcap_open_live(datos->disp, BUFSIZ, 1, PCAP_TOUT, errbuf);
 	
-	if(descr == NULL) 
+	if(descr == NULL)
 	{
 		printf("pcap_open_live(): %s\n", errbuf);
 		exit(1);
 	}
 	
+	/* Set pcap filter */
 	pcap_compile(descr, &fp, "arp", 0, 0);
 	pcap_setfilter(descr, &fp);
 	
+	/* Start loop for packet capture */
 	pcap_loop(descr, -1, (pcap_handler)proccess_packet, NULL);
 
 	return NULL;
@@ -115,7 +117,7 @@ void proccess_packet(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
 
 
 
-/* Handle Ethernet Header from Packet */
+/* Handle Ethernet Header from Packet and return type */
 u_int16_t handle_ethernet
         (u_char *args, struct pcap_pkthdr *pkthdr, const u_char *packet)
 {
@@ -191,13 +193,9 @@ void handle_ARP(struct pcap_pkthdr *pkthdr, const u_char *packet)
 {
 	struct arphdr *harp;
 	struct ether_arp *earp;
-	//u_char ipsrc[17];
-	//u_char ipdst[17];
-
 
 	harp = (struct arphdr *) (packet + ETH_HLEN);
 	earp = (struct ether_arp *) (packet + ETH_HLEN);
-
 
 	if ( ntohs(harp->ar_op) == ARPOP_REQUEST )
 	{
@@ -207,10 +205,10 @@ void handle_ARP(struct pcap_pkthdr *pkthdr, const u_char *packet)
 	else if ( ntohs(harp->ar_op) == ARPOP_REPLY )
 	{
 		struct arp_rep_l *new_arprep_l;
+
 		new_arprep_l = (struct arp_rep_l *) malloc (sizeof(struct arp_rep_l));
 		new_arprep_l->sip = (char *) malloc (sizeof(char) * 16);
 		new_arprep_l->dip = (char *) malloc (sizeof(char) * 16);
-
 
 		new_arprep_l->header = temp_header;
 		
@@ -230,7 +228,7 @@ void handle_ARP(struct pcap_pkthdr *pkthdr, const u_char *packet)
 	
 }
 
-void lnetInit(char *disp)
+void lnet_init(char *disp)
 {
 	
    char error[LIBNET_ERRBUF_SIZE];
@@ -261,7 +259,7 @@ void lnetInit(char *disp)
 
 
 /* Forge Arp Packet, using libnet */
-void ForgeArp(char *source_ip, char *dest_ip, char *disp)
+void forge_arp(char *source_ip, char *dest_ip, char *disp)
 {
 	static libnet_ptag_t arp=0, eth=0;
 	
@@ -301,7 +299,7 @@ void ForgeArp(char *source_ip, char *dest_ip, char *disp)
 }
 
 
-void lnetDestroy()
+void lnet_destroy()
 {
 	libnet_destroy(libnet);
 }

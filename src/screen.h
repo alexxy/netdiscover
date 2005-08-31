@@ -58,6 +58,7 @@ struct arp_rep_l {
 	char *sip;
 	char *dip;
 	char *vendor;
+	short type;
 	unsigned int count;
 	struct arp_rep_l *next;
 };

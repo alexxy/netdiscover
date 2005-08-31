@@ -79,11 +79,11 @@ void *start_sniffer(void *args)
 	pcap_t *descr;
 	struct bpf_program fp;	
 	struct t_data *datos; 
-		
+
 	datos = (struct t_data *)args;
+		
 	/* Open interface */
 	descr = pcap_open_live(datos->disp, BUFSIZ, 1, PCAP_TOUT, errbuf);
-	
 	if(descr == NULL)
 	{
 		printf("pcap_open_live(): %s\n", errbuf);
@@ -101,21 +101,6 @@ void *start_sniffer(void *args)
 }
 
 
-/* Handle Headers and IP data */
-/* from the recived pcap_loop packet 
-void proccess_packet(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
-        packet)
-{
-	u_int16_t type = handle_ethernet(args,pkthdr,packet);
-	
-	if(type == ETHERTYPE_ARP)
-	{
-		handle_ARP(pkthdr,packet);	
-		print_screen();
-	}
-} */
-
-
 /* Handle packets recived from pcap_loop */
 void proccess_packet(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
         packet)
@@ -131,81 +116,41 @@ void proccess_packet(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
 	/* Discard packets with our mac as source */
 	if (memcmp(new_header->smac, smac, 6) != 0)
 	{
-		temp_header = new_header;
-		handle_ARP(pkthdr,packet);
+		unsigned char type[2];
+		struct arp_rep_l *new_arprep_l;
+
+		new_arprep_l = (struct arp_rep_l *) malloc (sizeof(struct arp_rep_l));
+		new_arprep_l->sip = (char *) malloc (sizeof(char) * 16);
+		new_arprep_l->dip = (char *) malloc (sizeof(char) * 16);
+		
+		/* Parse ARP data and fill struct */
+		memcpy(type, packet + 20, 2); 		/* ARP Opcode */
+		new_arprep_l->header = new_header;	/* Add header */
+		new_arprep_l->count = 1;				/* Count      */
+		new_arprep_l->next = NULL;
+		
+		/* Source IP */
+		sprintf(new_arprep_l->sip, "%d.%d.%d.%d",
+			packet[28], packet[29], packet[30], packet[31]);
+		
+		/* Destination IP */
+		sprintf(new_arprep_l->dip, "%d.%d.%d.%d",
+			packet[38], packet[39], packet[40], packet[41]);
+		
+		
+		/* Check if its ARP request or reply, and add it to list */
+		if (memcmp(type, "\x00\x02", 2) == 0)
+		{
+			new_arprep_l->type = 2;
+		}
+		else if (memcmp(type, "\x00\x01", 2) == 0)
+		{
+			new_arprep_l->type = 1;
+		}
+		
+		arprep_add(new_arprep_l);
 	}
 }
-
-
-/* Handle Ethernet Header from Packet and return type 
-u_int16_t handle_ethernet
-        (u_char *args, struct pcap_pkthdr *pkthdr, const u_char *packet)
-{
-
-	struct ether_header *eptr;
-	struct p_header *new_header;
-	u_int caplen = pkthdr->caplen;
-	u_int length = pkthdr->len;
-	u_short ether_type;
-	u_char *temporal;
-	char *from;
-
-	if (caplen < ETHER_HDRLEN)
-	{
-		fprintf(stdout,"Packet length less than ethernet header length\n");
-		return -1;
-	}
-
-	// lets start with the ether header...
-	eptr = (struct ether_header *) packet;
-	ether_type = ntohs(eptr->ether_type);
-	
-	from = (char *) malloc (sizeof(char) * 18);
-	
-	#if defined(sun) && (defined(__svr4__) || defined(__SVR4))
-		temporal = &eptr->ether_shost.ether_addr_octet;
-	#else
-		temporal = eptr->ether_shost;
-	#endif
-	
-	sprintf(from, "%02x:%02x:%02x:%02x:%02x:%02x", 
-		temporal[0], temporal[1],
-		temporal[2], temporal[3],
-		temporal[4], temporal[5]);
-	
-	if(ether_type != ETHERTYPE_ARP)
-	{
-		return ether_type;
-		
-	}
-	
-	// Ignore if is from us 
-	if (strcmp(ourmac, from ) == 0)
-	{
-		return 0x069;
-	}
-	
-	new_header = (struct p_header *) malloc (sizeof(struct p_header));
-	new_header->smac = (char *) malloc (sizeof(char) * strlen(from));
-	new_header->dmac = (char *) malloc (sizeof(char) * 18);
-	new_header->length = (unsigned int)length;
-	
-	#if defined(sun) && (defined(__svr4__) || defined(__SVR4))
-		temporal = &eptr->ether_dhost.ether_addr_octet;
-	#else
-		temporal = eptr->ether_dhost;
-	#endif
-	
-	sprintf(new_header->smac, "%s", from);
-	sprintf(new_header->dmac, "%02x:%02x:%02x:%02x:%02x:%02x",
-		temporal[0], temporal[1],
-		temporal[2], temporal[3],
-		temporal[4], temporal[5]);
-	
-	temp_header = new_header;
-	
-	return ether_type;
-} */
 
 
 /* Prints Info about the arp packet */

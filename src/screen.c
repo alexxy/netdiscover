@@ -70,16 +70,19 @@ void fill_screen()
 				arprep_count->count, arprep_count->hosts, arprep_count->length );
 	
 	
-	/* Print each found station */
+	/* Print each found station (only arp reply) */
 	while( arprep_l != NULL )
 	{
-		printf("  %s\t %02x:%02x:%02x:%02x:%02x:%02x     ", arprep_l->sip, 
-					arprep_l->header->smac[0], arprep_l->header->smac[1],
-					arprep_l->header->smac[2], arprep_l->header->smac[3],
-					arprep_l->header->smac[4], arprep_l->header->smac[5]);
-		
-		printf("%02d   %03d   %s\n", arprep_l->count, 
-					arprep_l->header->length, arprep_l->vendor );
+		if ( (arprep_l->type == 2) || (arprep_l->type == 1) )
+		{
+			printf("  %s\t %02x:%02x:%02x:%02x:%02x:%02x     ", arprep_l->sip, 
+						arprep_l->header->smac[0], arprep_l->header->smac[1],
+						arprep_l->header->smac[2], arprep_l->header->smac[3],
+						arprep_l->header->smac[4], arprep_l->header->smac[5]);
+			
+			printf("%02d   %03d   %s\n", arprep_l->count, 
+						arprep_l->header->length, arprep_l->vendor );
+		}
 		
 		arprep_l = arprep_l->next;
 	}

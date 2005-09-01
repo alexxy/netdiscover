@@ -1,5 +1,4 @@
+- Length count doesnt work fine, must fix it
 - Fix OpenBSD high cpu load
 - Sacar arrays de configuracion
-- Send icmp to broadcast
 - Read range list from file
-- Must reorganize includes and functions?

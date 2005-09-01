@@ -382,7 +382,7 @@ void usage(char *comando)
 {
 	printf("Netdiscover %s [Active/passive reconnaissance tool]\n"
 		"Written by: Jaime Penalba <jpenalbae@gmail.com>\n\n"
-		"Usage: %s -i device [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]\n"
+		"Usage: %s [-i device] [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]\n"
 		"  -i device: your network device\n"
 		"  -r range: scan a given range instead of auto scan. 192.168.6.0/24,/16,/8\n"
 		"  -p passive mode do not send anything, only sniff\n"

@@ -39,7 +39,8 @@ Usage
 Usage: ./netdiscover [-i device] [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]
 
   -i device
-    The network device to sniff at and inject packets
+    The network device to sniff at and inject packets. If no device was
+	 specified, first available will be used.
 
   -r range
     Scan a given range instead of auto scan. Valid range values are:

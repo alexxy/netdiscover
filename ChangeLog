@@ -1,5 +1,7 @@
-Netdiscover 0.3 (Currently working on it / beta4)
-	* Some code cleaning / commenting done
+Netdiscover 0.3 (Currently working on it / beta5)
+	* Now arp request sender data is added to the stations list
+	* Improved sniffer packet processing code
+	* Major code cleaning / commenting done
 	* If no interface is specified will autoselect firstone available
 	* Better error handling, including interface and id checking
 	* Fixed header checks on configure.in, thanks to Charlie Brady for reporting

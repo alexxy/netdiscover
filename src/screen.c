@@ -58,28 +58,33 @@ void fill_screen()
 	
 	
 	printf("Currently scanning: %s    |   "
-				"Our Mac is: %s       \n"
-				"                                        \n",
-				current_network, ourmac);
+			"Our Mac is: %s       \n"
+			"                                        \n",
+			current_network, ourmac);
 	
 	/* Print Header and counters */
-	printf(" %d Captured ARP Reply packets, from %d hosts.   Total size: %d\n"
-				" ______________________________________________________________________________\n"
-				"|  IP            At MAC Address      Count  Len   MAC Vendor                   |\n"
-				" ------------------------------------------------------------------------------\n",
-				arprep_count->count, arprep_count->hosts, arprep_count->length );
+	printf(" %d Captured ARP Req/Rep packets, from %d hosts.   Total size: %d\n"
+			" _________________________________________________________________"
+			"_____________\n"
+			"|  IP            At MAC Address      Count  Len   MAC Vendor      "
+			"	       |\n"
+			" -----------------------------------------------------------------"
+			"-------------\n",
+			arprep_count->count, arprep_count->hosts, arprep_count->length );
 	
 	
-	/* Print each found station (only arp reply) */
+	/* Print each found station */
 	while( arprep_l != NULL )
 	{
 		if ( (arprep_l->type == 2) || (arprep_l->type == 1) )
 		{
+			/* IP & MAC */
 			printf("  %s\t %02x:%02x:%02x:%02x:%02x:%02x     ", arprep_l->sip, 
 						arprep_l->header->smac[0], arprep_l->header->smac[1],
 						arprep_l->header->smac[2], arprep_l->header->smac[3],
 						arprep_l->header->smac[4], arprep_l->header->smac[5]);
 			
+			/* Count, Length & Vendor */
 			printf("%02d   %03d   %s\n", arprep_l->count, 
 						arprep_l->header->length, arprep_l->vendor );
 		}

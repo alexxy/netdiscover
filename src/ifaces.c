@@ -23,13 +23,6 @@
  */
 
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <netinet/if_ether.h>
-	
-#include <arpa/inet.h>
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
@@ -41,7 +34,9 @@
 #include "ifaces.h"
 
 
-/* defines ETHER_HDRLEN */
+#define ARP_REPLY "\x00\x02"
+#define ARP_REQUEST "\x00\x01"
+
 #ifndef ETHER_HDRLEN 
 #define ETHER_HDRLEN 14
 #endif
@@ -56,6 +51,11 @@
 
 #ifndef IP_ALEN
 #define IP_ALEN 4
+#endif
+
+#ifndef ARPOP_REQUEST
+#define ARPOP_REQUEST 1
+#define ARPOP_REPLY 2
 #endif
 
 
@@ -137,79 +137,32 @@ void proccess_packet(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
 		sprintf(new_arprep_l->dip, "%d.%d.%d.%d",
 			packet[38], packet[39], packet[40], packet[41]);
 		
-		
 		/* Check if its ARP request or reply, and add it to list */
-		if (memcmp(type, "\x00\x02", 2) == 0)
-		{
+		if (memcmp(type, ARP_REPLY, 2) == 0)
 			new_arprep_l->type = 2;
-		}
-		else if (memcmp(type, "\x00\x01", 2) == 0)
-		{
+		else if (memcmp(type, ARP_REQUEST, 2) == 0)
 			new_arprep_l->type = 1;
-		}
 		
 		arprep_add(new_arprep_l);
 	}
 }
 
-
-/* Prints Info about the arp packet */
-void handle_ARP(struct pcap_pkthdr *pkthdr, const u_char *packet)
-{
-	struct arphdr *harp;
-	struct ether_arp *earp;
-
-	harp = (struct arphdr *) (packet + ETH_HLEN);
-	earp = (struct ether_arp *) (packet + ETH_HLEN);
-
-	if ( ntohs(harp->ar_op) == ARPOP_REQUEST )
-	{
-		//printf("\tARP: Request\n");
-		//char *type = "Request";
-	}
-	else if ( ntohs(harp->ar_op) == ARPOP_REPLY )
-	{
-		struct arp_rep_l *new_arprep_l;
-
-		new_arprep_l = (struct arp_rep_l *) malloc (sizeof(struct arp_rep_l));
-		new_arprep_l->sip = (char *) malloc (sizeof(char) * 16);
-		new_arprep_l->dip = (char *) malloc (sizeof(char) * 16);
-
-		new_arprep_l->header = temp_header;
-		
-		sprintf(new_arprep_l->sip, "%d.%d.%d.%d",
-			earp->arp_spa[0], earp->arp_spa[1],
-			earp->arp_spa[2], earp->arp_spa[3]);
-
-		sprintf(new_arprep_l->dip, "%d.%d.%d.%d",
-			earp->arp_tpa[0], earp->arp_tpa[1],
-			earp->arp_tpa[2], earp->arp_tpa[3]);
-		
-		new_arprep_l->count = 1;
-		new_arprep_l->next = NULL;
-		
-		arprep_add(new_arprep_l);
-	}
-	
-}
-
+/* Init device for libnet and get mac addr */
 void lnet_init(char *disp)
 {
 	
    char error[LIBNET_ERRBUF_SIZE];
 	libnet = NULL;
-		
-	libnet = libnet_init(LIBNET_LINK, disp, error);
 	
-	if (libnet == NULL)
-	{
+	/* Init libnet */
+	libnet = libnet_init(LIBNET_LINK, disp, error);
+	if (libnet == NULL) {
 		printf("libnet_init() falied: %s", error);
 		exit(EXIT_FAILURE);
 	}
 	
-	if (ourmac == NULL)
-	{
-		// get hwaddr
+	/* Get our mac addr */
+	if (ourmac == NULL) {
 		struct libnet_ether_addr *mymac;
 		mymac = libnet_get_hwaddr(libnet);
 		memcpy(smac, mymac, ETH_ALEN);
@@ -227,21 +180,20 @@ void lnet_init(char *disp)
 void forge_arp(char *source_ip, char *dest_ip, char *disp)
 {
 	static libnet_ptag_t arp=0, eth=0;
-	
 	//static u_char dmac[ETH_ALEN] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	static u_char dmac[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-
 	static u_char sip[IP_ALEN];
 	static u_char dip[IP_ALEN];
+	u_int32_t otherip, myip;
 	
-	// get src & dst ip address
-   u_int32_t otherip, myip;
+	/* get src & dst ip address */
    otherip = libnet_name2addr4(libnet, dest_ip, LIBNET_RESOLVE);
    memcpy(dip, (char*)&otherip, IP_ALEN);
 	
 	myip = libnet_name2addr4(libnet, source_ip, LIBNET_RESOLVE);
    memcpy(sip, (char*)&myip, IP_ALEN);
 	
+	/* forge arp data */
 	arp = libnet_build_arp(
       ARPHRD_ETHER,
       ETHERTYPE_IP,
@@ -253,13 +205,15 @@ void forge_arp(char *source_ip, char *dest_ip, char *disp)
       libnet,
       arp);
  
+	/* forge ethernet header */
    eth = libnet_build_ethernet(
       dmac, smac,
       ETHERTYPE_ARP,
       NULL, 0,
       libnet,
       eth);
-		
+	
+	/* Inject the packet */
    libnet_write(libnet);
 }
 

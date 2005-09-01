@@ -51,8 +51,6 @@ extern "C"
 	// Sniffer Functions
 	void *start_sniffer(void *);
 	void proccess_packet(u_char *, struct pcap_pkthdr *,const u_char *);
-	void handle_ARP(struct pcap_pkthdr *, const u_char *);
-	u_int16_t handle_ethernet(u_char *, struct pcap_pkthdr *, const u_char *);
 		
 	// ARP Generation & Injection
 	void lnet_init(char *);

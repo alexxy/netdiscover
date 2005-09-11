@@ -23,7 +23,7 @@
  */
  
 #define _GNU_SOURCE
-#define VERSION "0.3-beta5"
+#define VERSION "0.3-beta6"
 
 #include <stdio.h>
 #include <pthread.h>
@@ -76,9 +76,19 @@ char *common_net[] = {
 };
 
 
-pthread_t injection, sniffer, screen;
+pthread_t injection, sniffer, screen, keys;
 int fastmode, pcount, node, ssleep;
 long sleept;
+
+
+/* Read control keys */
+void *keys_thread(void *arg)
+{
+    while ( 1 == 1 )
+    {
+        read_key();
+    }
+}
 
 
 /* main, fetch params and start */
@@ -180,10 +190,9 @@ int main(int argc, char **argv)
 	}
 	
 	/* Start the execution */
-	if (pthread_create(&screen, NULL, screen_refresh, (void *)NULL))
-		perror("Could not create screen thread");
-	if (pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos))
-		perror("Could not create sniffer thread");
+	pthread_create(&screen, NULL, screen_refresh, (void *)NULL);
+	pthread_create(&keys, NULL, keys_thread, (void *)NULL);
+	pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos);
 	
 	if (esniff == 1)
 	{

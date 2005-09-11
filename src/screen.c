@@ -31,17 +31,120 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
+#include <termios.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
 #include "screen.h"
 #include "misc.h"
 #include "ifaces.h"
 
-struct arp_req_l *first_arpreq, *last_arpreq;
+
+struct termios stored_settings, working_settings;
 struct arp_rep_l *first_arprep, *last_arprep;
 struct arp_rep_c *arprep_count;
+struct winsize win_sz;
+
+int scroll;
+char line[80], tline[80];
+
+
+/* Inits lists with null pointers, sighandlers, etc */
+void init_lists()
+{
+	scroll = 0;
+	
+	/* ARP packets lists */
+	first_arprep = (struct arp_rep_l *) NULL;
+	last_arprep = (struct arp_rep_l *) NULL;
+		
+	/* ARP Replys counters */
+	arprep_count = (struct arp_rep_c *) malloc (sizeof(struct arp_rep_c));
+	arprep_count->count = 0;
+	arprep_count->hosts = 0;
+	arprep_count->length = 0;
+	
+	/* Set signal handlers */
+	signal( SIGINT,   sighandler );
+   signal( SIGKILL,   sighandler );
+   signal( SIGTERM,   sighandler );
+   signal( SIGHUP,   sighandler );
+   signal( SIGABRT,   sighandler );
+   signal( SIGCONT,   sighandler );
+
+	/* Set console properties to read keys */
+   tcgetattr(0,&stored_settings);
+   working_settings = stored_settings;
+
+	working_settings.c_lflag &= ~(ICANON|ECHO);
+   working_settings.c_cc[VTIME] = 0;
+   working_settings.c_cc[VMIN] = 1;
+
+   tcsetattr(0,TCSANOW,&working_settings);
+}
+
+
+/* Handle signals and set terminal */
+void sighandler(int signum)
+{
+	if (signum == SIGCONT)
+    {
+        tcsetattr(0,TCSANOW,&working_settings);
+    }
+    else
+    {
+        tcsetattr(0,TCSANOW,&stored_settings);
+        exit(0);
+    }
+}
+
+
+/* Read input keys */
+void read_key()
+{
+    int ch;
+    ch = getchar();
+
+    /* Check for arrow keys */
+    if ( ch == 27)
+    {
+        ch = getchar();
+		 
+        if (ch == 91)
+        {
+            ch = getchar();
+
+            if (ch == 66)
+                ch = 106;
+            else if (ch == 65)
+                ch = 107;
+        }
+    }
+    
+
+    /* Key functions */
+	 if((ch == 107) && (scroll > 0))
+    	scroll -= 1;		// UP
+    else if ((ch == 106)&&(scroll < (arprep_count->hosts - win_sz.ws_row + 7)))
+		 scroll += 1;		// DOWN
+	 else if (ch == 113)
+		 sighandler(0);	// QUIT
+	 
+	 print_screen();
+}
+
 
 /* Clear and fill the screen // */
 void print_screen()
 {
+	/* Get Console Size */
+   if (ioctl(0, TIOCGWINSZ, &win_sz) < 0)
+   {
+   	win_sz.ws_row = 24;
+      win_sz.ws_col = 80;
+   }
+	 
+	/* Flush and print screen */
 	fprintf( stderr, "\33[1;1H" );
 	fill_screen();
 	fprintf( stderr, "\33[J" );
@@ -52,65 +155,87 @@ void print_screen()
 /* Fills the screen */
 void fill_screen()
 {
-	
+	int x, j;
 	struct arp_rep_l *arprep_l;
+	char blank[] = " ";
+	
+	x = 0;
 	arprep_l = first_arprep;
 	
 	
-	printf("Currently scanning: %s    |   "
-			"Our Mac is: %s       \n"
-			"                                        \n",
+	sprintf(line, "Currently scanning: %s   |   Our Mac is: %s", 
 			current_network, ourmac);
+	printf("%s", line);
+	
+	/* Fill with spaces */
+	for (j=strlen(line); j<win_sz.ws_col - 1; j++)
+			printf(" ");
+	printf("\n");
+	
+	/* Print blank line with spaces */
+	for (j=0; j<win_sz.ws_col - 1; j++)
+			printf(" ");
+	printf("\n");
+	
+	
+	sprintf(line, " %d Captured ARP Req/Rep packets, from %d hosts.   Total size: %d", 
+			arprep_count->count, arprep_count->hosts, arprep_count->length);
+	printf("%s", line);
+	
+	/* Fill with spaces */
+	for (j=strlen(line); j<win_sz.ws_col - 1; j++)
+			printf(" ");
+	printf("\n");
+	
 	
 	/* Print Header and counters */
-	printf(" %d Captured ARP Req/Rep packets, from %d hosts.   Total size: %d\n"
-			" _________________________________________________________________"
-			"_____________\n"
-			"|  IP            At MAC Address      Count  Len   MAC Vendor      "
-			"	       |\n"
-			" -----------------------------------------------------------------"
-			"-------------\n",
-			arprep_count->count, arprep_count->hosts, arprep_count->length );
+	printf(" _____________________________________________________________________________\n"
+			"|  IP            At MAC Address      Count  Len   MAC Vendor                  |\n"
+			" ----------------------------------------------------------------------------- \n");
 	
 	
 	/* Print each found station */
 	while( arprep_l != NULL )
 	{
-		if ( (arprep_l->type == 2) || (arprep_l->type == 1) )
+		if (x >= scroll)
 		{
+			sprintf(line, " ");
+			sprintf(tline, " ");
+			
+			/* Set IP */
+			sprintf(tline, "%s ", arprep_l->sip);
+			strcat(line, tline);
+			
+			/* Fill with spaces */
+			for (j=strlen(line); j<17; j++)
+				strcat(line, blank);
+			
 			/* IP & MAC */
-			printf("  %s\t %02x:%02x:%02x:%02x:%02x:%02x     ", arprep_l->sip, 
-						arprep_l->header->smac[0], arprep_l->header->smac[1],
-						arprep_l->header->smac[2], arprep_l->header->smac[3],
-						arprep_l->header->smac[4], arprep_l->header->smac[5]);
+			sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x    ",
+				arprep_l->header->smac[0], arprep_l->header->smac[1],
+				arprep_l->header->smac[2], arprep_l->header->smac[3],
+				arprep_l->header->smac[4], arprep_l->header->smac[5]);
+			strcat(line, tline);
 			
 			/* Count, Length & Vendor */
-			printf("%02d   %03d   %s\n", arprep_l->count, 
-						arprep_l->header->length, arprep_l->vendor );
+			sprintf(tline, "%02d    %03d   %s", arprep_l->count, 
+				arprep_l->header->length, arprep_l->vendor );
+			strcat(line, tline);
+			
+			/* Fill again with spaces */
+			for (j=strlen(line); j<win_sz.ws_col - 1; j++)
+				strcat(line, blank);
+			
+			printf("%s\n", line);
 		}
 		
+		x += 1;
 		arprep_l = arprep_l->next;
+		
+		if (x >= ( (win_sz.ws_row + scroll) - 7))
+			break;
 	}
 	
-}
-
-
-/* Inits lists with null pointers, etc */
-void init_lists()
-{
-	/* ARP Requests */
-	first_arpreq = (struct arp_req_l *) NULL;
-	last_arpreq = (struct arp_req_l *) NULL;
-
-	/* ARP Replys */
-	first_arprep = (struct arp_rep_l *) NULL;
-	last_arprep = (struct arp_rep_l *) NULL;
-		
-	/* ARP Replys counters */
-	arprep_count = (struct arp_rep_c *) malloc (sizeof(struct arp_rep_c));
-	arprep_count->count = 0;
-	arprep_count->hosts = 0;
-	arprep_count->length = 0;
 }
 
 

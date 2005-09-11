@@ -68,6 +68,8 @@ struct arp_rep_l {
 /* Screen functions */
 void print_screen();
 void fill_screen();
+void read_key();
+void sighandler(int);
 
 /* Lists functions */
 void init_lists();

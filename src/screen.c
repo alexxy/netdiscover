@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+#include <pthread.h>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -44,15 +45,20 @@ struct termios stored_settings, working_settings;
 struct arp_rep_l *first_arprep, *last_arprep;
 struct arp_rep_c *arprep_count;
 struct winsize win_sz;
+pthread_mutex_t *listm;
 
 int scroll;
-char line[80], tline[80];
+char line[300], tline[300];
 
 
 /* Inits lists with null pointers, sighandlers, etc */
 void init_lists()
 {
 	scroll = 0;
+	
+	/* Mutex for list access */
+	listm =(pthread_mutex_t *)malloc(sizeof (pthread_mutex_t));
+	pthread_mutex_init(listm, NULL);
 	
 	/* ARP packets lists */
 	first_arprep = (struct arp_rep_l *) NULL;
@@ -159,6 +165,8 @@ void fill_screen()
 	struct arp_rep_l *arprep_l;
 	char blank[] = " ";
 	
+	pthread_mutex_lock(listm);
+	
 	x = 0;
 	arprep_l = first_arprep;
 	
@@ -229,13 +237,15 @@ void fill_screen()
 			printf("%s\n", line);
 		}
 		
-		x += 1;
 		arprep_l = arprep_l->next;
+		x += 1;
 		
 		if (x >= ( (win_sz.ws_row + scroll) - 7))
 			break;
 	}
 	
+	
+	pthread_mutex_unlock(listm);
 }
 
 
@@ -243,6 +253,8 @@ void fill_screen()
 void arprep_add(struct arp_rep_l *new)
 {	
 	int i = 0;
+	
+	pthread_mutex_lock(listm);
 	
 	if ( first_arprep == NULL )
 	{
@@ -287,4 +299,6 @@ void arprep_add(struct arp_rep_l *new)
 		arprep_count->count += 1;
 		arprep_count->length += new->header->length;
 	}
+	
+	pthread_mutex_unlock(listm);
 }

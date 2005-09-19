@@ -1,6 +1,6 @@
 Welcome to Netdiscover 0.3 beta. Netdiscover is a network address discovering
-tool, developed mainly for those wireless networks without dhcp server, but it
-also works on hub/switched networks. Its based on arp requests, it will send arp
+tool, developed mainly for those wireless networks without dhcp server, it
+also works on hub/switched networks. Its based on arp packets, it will send arp
 requests and sniff for replys.
 
 Its my first public C tool, so dont be too hard with me, if some parts on the
@@ -10,10 +10,8 @@ suggestions or patches at <jpenalbae@gmail.com>
 Also mail me for any bug or compilation error, it must compile with gcc 2.95 or
 newer.
 
-An excesive cpu comsuption happens on OpenBSD, and maybe also on others BSDs,
-im looking for it, also mail me with your fix. It looks like some shit arround 
-pcap_loop().
-
+An excesive cpu comsuption happens on OpenBSD, due to threads design and the
+use of pcap_open_live() with pcap_loop(), any sugestions for fix are welcome.
 
 
 Requeriments
@@ -21,7 +19,7 @@ Requeriments
 
  - libpcap
  - libnet > 1.1.2
- - Tested to work on Linux, Solaris and OpenBSD, also other unixes may work
+ - Tested to work on Linux, Solaris MacOS X and OpenBSD, other unixes may work
  
 
 Build
@@ -34,6 +32,11 @@ $ make
 
 Usage
 =====
+
+Screen Keys:
+
+	- k/j (or up/down arrow keys) scroll up/down
+	- q quit
 
 
 Usage: ./netdiscover [-i device] [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]

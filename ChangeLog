@@ -1,4 +1,7 @@
 Netdiscover 0.3 (Currently working on it / beta5)
+	* Improved screen interface to display large hosts lists, j/k or up/down
+	  arrow keys can now be used to scroll
+	* Fixed packet length count display
 	* Now arp request sender data is added to the stations list
 	* Improved sniffer packet processing code
 	* Major code cleaning / commenting done

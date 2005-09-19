@@ -111,7 +111,7 @@ void proccess_packet(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
 	new_header = (struct p_header *) malloc (sizeof(struct p_header));
 	memcpy(new_header->dmac, packet, 6);	  /* dest mac    */
 	memcpy(new_header->smac, packet + 6, 6); /* src mac     */
-	new_header->length = sizeof(packet);	  /* Packet size */
+	new_header->length = pkthdr->len;	     /* Packet size */
 	
 	/* Discard packets with our mac as source */
 	if (memcmp(new_header->smac, smac, 6) != 0)

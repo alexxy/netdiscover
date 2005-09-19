@@ -1,4 +1,5 @@
-- Length count doesnt work fine, must fix it
-- Fix OpenBSD high cpu load
+- Make help screen
+- Display only arp requests full info
+- Find a fix for OpenBSD high cpu load
 - Sacar arrays de configuracion
 - Read range list from file

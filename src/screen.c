@@ -41,6 +41,7 @@
 #include "ifaces.h"
 
 
+/* Shity globals */
 struct termios stored_settings, working_settings;
 struct arp_rep_l *first_arprep, *last_arprep;
 struct arp_rep_c *arprep_count;
@@ -48,6 +49,7 @@ struct winsize win_sz;
 pthread_mutex_t *listm;
 
 int scroll;
+int smode;
 char line[300], tline[300];
 
 
@@ -55,6 +57,7 @@ char line[300], tline[300];
 void init_lists()
 {
 	scroll = 0;
+	smode = 0;
 	
 	/* Mutex for list access */
 	listm =(pthread_mutex_t *)malloc(sizeof (pthread_mutex_t));
@@ -133,6 +136,10 @@ void read_key()
     	scroll -= 1;		// UP
     else if ((ch == 106)&&(scroll < (arprep_count->hosts - win_sz.ws_row + 7)))
 		 scroll += 1;		// DOWN
+	 else if (ch == 114)
+		 smode = 1;	// PRINT REQUEST
+	 else if (ch == 97)
+		 smode = 0;	// PRINT ALL
 	 else if (ch == 113)
 		 sighandler(0);	// QUIT
 	 
@@ -197,9 +204,12 @@ void fill_screen()
 	
 	
 	/* Print Header and counters */
-	printf(" _____________________________________________________________________________\n"
-			"|  IP            At MAC Address      Count  Len   MAC Vendor                  |\n"
-			" ----------------------------------------------------------------------------- \n");
+	printf(" _____________________________________________________________________________\n");
+	if (smode == 0)
+		printf("|  IP            At MAC Address      Count  Len   MAC Vendor                  |\n");
+	else if (smode == 1)
+		printf("|  IP            At MAC Address      Requests MAC for IP                      |\n");
+	printf(" ----------------------------------------------------------------------------- \n");
 	
 	
 	/* Print each found station */
@@ -207,34 +217,70 @@ void fill_screen()
 	{
 		if (x >= scroll)
 		{
-			sprintf(line, " ");
-			sprintf(tline, " ");
-			
-			/* Set IP */
-			sprintf(tline, "%s ", arprep_l->sip);
-			strcat(line, tline);
-			
-			/* Fill with spaces */
-			for (j=strlen(line); j<17; j++)
-				strcat(line, blank);
-			
-			/* IP & MAC */
-			sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x    ",
-				arprep_l->header->smac[0], arprep_l->header->smac[1],
-				arprep_l->header->smac[2], arprep_l->header->smac[3],
-				arprep_l->header->smac[4], arprep_l->header->smac[5]);
-			strcat(line, tline);
-			
-			/* Count, Length & Vendor */
-			sprintf(tline, "%02d    %03d   %s", arprep_l->count, 
-				arprep_l->header->length, arprep_l->vendor );
-			strcat(line, tline);
-			
-			/* Fill again with spaces */
-			for (j=strlen(line); j<win_sz.ws_col - 1; j++)
-				strcat(line, blank);
-			
-			printf("%s\n", line);
+			/* Print each screen mode */
+			if (smode == 0) /* Print all packets */
+			{
+				sprintf(line, " ");
+				sprintf(tline, " ");
+				
+				/* Set IP */
+				sprintf(tline, "%s ", arprep_l->sip);
+				strcat(line, tline);
+				
+				/* Fill with spaces */
+				for (j=strlen(line); j<17; j++)
+					strcat(line, blank);
+				
+				/* IP & MAC */
+				sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x    ",
+					arprep_l->header->smac[0], arprep_l->header->smac[1],
+					arprep_l->header->smac[2], arprep_l->header->smac[3],
+					arprep_l->header->smac[4], arprep_l->header->smac[5]);
+				strcat(line, tline);
+				
+				/* Count, Length & Vendor */
+				sprintf(tline, "%02d    %03d   %s", arprep_l->count, 
+					arprep_l->header->length, arprep_l->vendor );
+				strcat(line, tline);
+				
+				/* Fill again with spaces */
+				for (j=strlen(line); j<win_sz.ws_col - 1; j++)
+					strcat(line, blank);
+				
+				printf("%s\n", line);
+				
+			} /* Print only arp request */
+			else if ( (smode == 1) && (arprep_l->type == 1) )
+			{
+				sprintf(line, " ");
+				sprintf(tline, " ");
+				
+				/* Get source IP */
+				sprintf(tline, "%s ", arprep_l->sip);
+				strcat(line, tline);
+				
+				/* Fill with spaces */
+				for (j=strlen(line); j<17; j++)
+					strcat(line, blank);
+				
+				/* Get source MAC */
+				sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x    ",
+					arprep_l->header->smac[0], arprep_l->header->smac[1],
+					arprep_l->header->smac[2], arprep_l->header->smac[3],
+					arprep_l->header->smac[4], arprep_l->header->smac[5]);
+				strcat(line, tline);
+				strcat(line, "   ");
+				
+				/* Get destination IP */
+				sprintf(tline, "%s ", arprep_l->dip);
+				strcat(line, tline);
+				
+				/* Fill again with spaces */
+				for (j=strlen(line); j<win_sz.ws_col - 1; j++)
+					strcat(line, blank);
+				
+				printf("%s\n", line);
+			}
 		}
 		
 		arprep_l = arprep_l->next;

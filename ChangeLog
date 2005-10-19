@@ -1,4 +1,6 @@
-Netdiscover 0.3 (Currently working on it / beta5)
+Netdiscover 0.3 (Currently working on it / beta6)
+   * Added new screen to display arp request
+	* Fixed screen refresh/display problems
 	* Improved screen interface to display large hosts lists, j/k or up/down
 	  arrow keys can now be used to scroll
 	* Fixed packet length count display

@@ -74,3 +74,4 @@ void sighandler(int);
 /* Lists functions */
 void init_lists();
 void arprep_add(struct arp_rep_l *);
+void arpreq_add(struct arp_rep_l *);

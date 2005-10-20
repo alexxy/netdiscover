@@ -3,7 +3,7 @@
 ## If you don't want it to overwrite it,
 ## 	Please disable it in the Anjuta project configuration
 
-SUBDIRS = src
+SUBDIRS = src doc
 
 netdiscoverdocdir = ${prefix}/doc/netdiscover
 netdiscoverdoc_DATA = \
@@ -16,6 +16,8 @@ netdiscoverdoc_DATA = \
 	TODO
 
 EXTRA_DIST = $(netdiscoverdoc_DATA)
+
+
 
 # Copy all the spec files. Of cource, only one is actually used.
 dist-hook:

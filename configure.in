@@ -109,4 +109,5 @@ AC_DEFINE_UNQUOTED(PACKAGE_SOURCE_DIR, "${packagesrcdir}")
 AC_OUTPUT([
 Makefile
 src/Makefile
+doc/Makefile
 ])

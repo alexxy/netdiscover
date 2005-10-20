@@ -1,0 +1,61 @@
+.TH netdiscover "8" "October 2005" "netdiscover" "User Commands"
+.SH NAME
+netdiscover \- netdiscover is an active/passive address reconnaissance tool.
+.SH SYNOPSIS
+\fBnetdiscover\fR [ options ]
+.SH DESCRIPTION
+netdiscover is an active/passive address reconnaissance tool, mainly developed to gain informations about 
+wireless networks without dhcp servers in wardriving scenarios. It can also be 
+used on switched networks. Built on top of libnet and libpcap, 
+it can passively detect online hosts or search for them by sending arp requests. 
+Furthermore, it can be used to inspect your network's arp 
+traffic and find network addresses using auto scan mode, which will scan
+for common local networks. 
+.SH OPTIONS
+.TP
+\fB\-i\fR device 
+The network interface to sniff and inject packets. If no interface is
+specified, first available will be used.
+
+.TP
+\fB\-r\fR range
+Scan a given range instead of auto scan. Valid range values area for example:
+192.168.0.0/24, 192.168.0.0/16 or 192.168.0.0/8.
+
+.TP
+\fB\-p\fR
+Enable passive mode. In passive mode, netdiscover does not send anything, but does only sniff.
+
+.TP
+\fB\-s\fR time
+Sleep given time in milliseconds between each arp request
+injection. (default 1)
+
+.TP
+\fB\-c\fR count
+Number of times to send each arp request. Useful for networks with
+packet loss, so it will scan given several times for each host.
+
+.TP
+\fB\-n\fR node
+Last ip octet of the source ip used for scanning. You can change it
+if the default host is already used. (allowed range: 2 to 253, default 66)
+
+.TP
+\fB\-S\fR
+Enable sleep time suppression between each request. If set, netdiscover 
+will sleep after having scanned 255 hosts instead of sleeping after each one.
+This mode was used in netdiscover 0.3 beta4 and before. Avoid this option in networks with 
+packet loss, or in wireless networks with low signal level. (also called hardcore mode)
+
+.TP
+\fB\-f\fR
+Enable fast mode scan. This will only scan for .1, .100 and .254 on each
+network. This mode is usefull while searching for ranges being used. 
+After you found such range you can make a specific range scan to find online boxes.
+
+.SH AUTHOR
+netdiscover was written by Jaime Peñalba.
+.PP
+This manual page was written by Nicolas Weyland <ufoalien@weyland.ch>,
+for the Debian project (but may be used by others).

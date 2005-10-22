@@ -142,15 +142,22 @@ void read_key()
     else if ((ch == 106)&&(scroll < (arprep_count->hosts - win_sz.ws_row + 7)))
 		 scroll += 1;		// DOWN
 	 else if (ch == 114)
+    {
 		 smode = 1;	// PRINT REQUEST
+       scroll = 0;
+    }
 	 else if (ch == 97)
+    {
 		 smode = 0;	// PRINT ALL
+       scroll = 0;
+    }
 	 else if ((ch == 113) && (smode != 2) )
 		 sighandler(0);	// QUIT
     else if ((ch == 113) && (smode == 2) )
 		 smode = oldmode;	// close screen
     else if (ch == 104)
     {
+       scroll = 0;
 		 oldmode = smode;	// PRINT HELP
        smode = 2;
     }

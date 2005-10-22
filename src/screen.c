@@ -275,7 +275,7 @@ void fill_screen()
    {
       arprep_l = first_arpreq;
       
-      while( (arprep_l != NULL) && (x >= scroll) )
+      while(arprep_l != NULL)
       {
          if (x >= scroll)
          {  

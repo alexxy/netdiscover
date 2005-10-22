@@ -189,8 +189,8 @@ void fill_screen()
    
    pthread_mutex_lock(listm);	
 	
-   sprintf(line, "Currently scanning: %s   |   Our Mac is: %s", 
-           current_network, ourmac);
+   sprintf(line, " Currently scanning: %s   |   Our Mac is: %s - %i", 
+           current_network, ourmac, scroll);
    printf("%s", line);
 	
    /* Fill with spaces */
@@ -216,10 +216,10 @@ void fill_screen()
 	
    /* Print Header and counters */
    printf(" _____________________________________________________________________________\n");
-   if (smode == 0 || oldmode == 0)
-   	printf("|  IP            At MAC Address      Count  Len   MAC Vendor                  |\n");
-   else if (smode == 1 || oldmode == 1)
-   	printf("|  IP            At MAC Address      Requests IP     Count                    |\n");
+   if (smode == 0 || (oldmode == 0 && smode == 2))
+   	printf("   IP            At MAC Address      Count  Len   MAC Vendor                   \n");
+   else if (smode == 1 || (oldmode == 1 && smode == 2))
+   	printf("   IP            At MAC Address      Requests IP     Count                     \n");
    printf(" ----------------------------------------------------------------------------- \n");
 
 
@@ -228,36 +228,39 @@ void fill_screen()
    {
       arprep_l = first_arprep;
       
-      while( (arprep_l != NULL) && (x >= scroll) )
+      while(arprep_l != NULL)
       {
-         sprintf(line, " ");
-         sprintf(tline, " ");
-         
-         /* Set IP */
-         sprintf(tline, "%s ", arprep_l->sip);
-         strcat(line, tline);
-         
-         /* Fill with spaces */
-         for (j=strlen(line); j<17; j++)
-            strcat(line, blank);
-         
-         /* IP & MAC */
-         sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x    ",
-            arprep_l->header->smac[0], arprep_l->header->smac[1],
-            arprep_l->header->smac[2], arprep_l->header->smac[3],
-            arprep_l->header->smac[4], arprep_l->header->smac[5]);
-         strcat(line, tline);
-         
-         /* Count, Length & Vendor */
-         sprintf(tline, "%02d    %03d   %s", arprep_l->count, 
-                 arprep_l->header->length, arprep_l->vendor );
-         strcat(line, tline);
-         
-         /* Fill again with spaces */
-         for (j=strlen(line); j<win_sz.ws_col - 1; j++)
-            strcat(line, blank);
-         
-         printf("%s\n", line);
+         if (x >= scroll)
+         {
+            sprintf(line, " ");
+            sprintf(tline, " ");
+            
+            /* Set IP */
+            sprintf(tline, "%s ", arprep_l->sip);
+            strcat(line, tline);
+            
+            /* Fill with spaces */
+            for (j=strlen(line); j<17; j++)
+               strcat(line, blank);
+            
+            /* IP & MAC */
+            sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x    ",
+               arprep_l->header->smac[0], arprep_l->header->smac[1],
+               arprep_l->header->smac[2], arprep_l->header->smac[3],
+               arprep_l->header->smac[4], arprep_l->header->smac[5]);
+            strcat(line, tline);
+            
+            /* Count, Length & Vendor */
+            sprintf(tline, "%02d    %03d   %s", arprep_l->count, 
+                    arprep_l->header->length, arprep_l->vendor );
+            strcat(line, tline);
+            
+            /* Fill again with spaces */
+            for (j=strlen(line); j<win_sz.ws_col - 1; j++)
+               strcat(line, blank);
+            
+            printf("%s\n", line);
+         }
          
          arprep_l = arprep_l->next;
          x += 1;
@@ -274,41 +277,44 @@ void fill_screen()
       
       while( (arprep_l != NULL) && (x >= scroll) )
       {
-         sprintf(line, " ");
-         sprintf(tline, " ");
-         
-         /* Get source IP */
-         sprintf(tline, "%s ", arprep_l->sip);
-         strcat(line, tline);
-         
-         /* Fill with spaces */
-         for (j=strlen(line); j<17; j++)
-            strcat(line, blank);
-         
-         /* Get source MAC */
-         sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x   ",
-            arprep_l->header->smac[0], arprep_l->header->smac[1],
-            arprep_l->header->smac[2], arprep_l->header->smac[3],
-            arprep_l->header->smac[4], arprep_l->header->smac[5]);
-         strcat(line, tline);
-         
-         /* Get destination IP */
-         sprintf(tline, "%s", arprep_l->dip);
-         strcat(line, tline);
-         
-         /* Fill with spaces */
-         for (j=strlen(line); j<54; j++)
-            strcat(line, blank);
-         
-         /* Count, Length & Vendor */
-         sprintf(tline, "%02d", arprep_l->count);
-         strcat(line, tline);
-         
-         /* Fill again with spaces */
-         for (j=strlen(line); j<win_sz.ws_col - 1; j++)
-            strcat(line, blank);
-         
-         printf("%s\n", line);
+         if (x >= scroll)
+         {  
+            sprintf(line, " ");
+            sprintf(tline, " ");
+            
+            /* Get source IP */
+            sprintf(tline, "%s ", arprep_l->sip);
+            strcat(line, tline);
+            
+            /* Fill with spaces */
+            for (j=strlen(line); j<17; j++)
+               strcat(line, blank);
+            
+            /* Get source MAC */
+            sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x   ",
+               arprep_l->header->smac[0], arprep_l->header->smac[1],
+               arprep_l->header->smac[2], arprep_l->header->smac[3],
+               arprep_l->header->smac[4], arprep_l->header->smac[5]);
+            strcat(line, tline);
+            
+            /* Get destination IP */
+            sprintf(tline, "%s", arprep_l->dip);
+            strcat(line, tline);
+            
+            /* Fill with spaces */
+            for (j=strlen(line); j<54; j++)
+               strcat(line, blank);
+            
+            /* Count, Length & Vendor */
+            sprintf(tline, "%02d", arprep_l->count);
+            strcat(line, tline);
+            
+            /* Fill again with spaces */
+            for (j=strlen(line); j<win_sz.ws_col - 1; j++)
+               strcat(line, blank);
+            
+            printf("%s\n", line);
+         }
          
          arprep_l = arprep_l->next;
          x += 1;

@@ -1,6 +1,6 @@
+- Fix scroll mode
 - Clean up arprep and req struct
 - Make help screen
-- Display only arp requests full info
 - Find a fix for OpenBSD high cpu load
 - Sacar arrays de configuracion
 - Read range list from file

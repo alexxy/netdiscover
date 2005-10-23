@@ -11,7 +11,7 @@ AM_CFLAGS =\
 	 -Wall\
 	 -g
 
-bin_PROGRAMS = netdiscover
+sbin_PROGRAMS = netdiscover
 
 netdiscover_SOURCES = \
 	main.c\

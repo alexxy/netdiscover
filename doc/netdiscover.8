@@ -1,16 +1,12 @@
 .TH netdiscover "8" "October 2005" "netdiscover" "User Commands"
 .SH NAME
-netdiscover \- netdiscover is an active/passive address reconnaissance tool.
+netdiscover \- an active/passive arp reconnaissance tool.
 .SH SYNOPSIS
-\fBnetdiscover\fR [ options ]
+\fBnetdiscover\fR [-i device] [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]
 .SH DESCRIPTION
-netdiscover is an active/passive address reconnaissance tool, mainly developed to gain informations about 
-wireless networks without dhcp servers in wardriving scenarios. It can also be 
-used on switched networks. Built on top of libnet and libpcap, 
-it can passively detect online hosts or search for them by sending arp requests. 
-Furthermore, it can be used to inspect your network's arp 
-traffic and find network addresses using auto scan mode, which will scan
-for common local networks. 
+netdiscover is an active/passive arp reconnaissance tool, mainly developed to gain information about wireless networks without dhcp servers in wardriving scenarios. It can also be used on switched networks. Built on top of libnet and libpcap, it can passively detect online hosts or search for them by sending arp requests. 
+.PP
+Furthermore, it can be used to inspect your network's arp traffic, or find network addresses using auto scan mode, which will scan for common local networks. 
 .SH OPTIONS
 .TP
 \fB\-i\fR device 
@@ -34,7 +30,7 @@ injection. (default 1)
 .TP
 \fB\-c\fR count
 Number of times to send each arp request. Useful for networks with
-packet loss, so it will scan given several times for each host.
+packet loss, so it will scan given times for each host.
 
 .TP
 \fB\-n\fR node
@@ -54,8 +50,37 @@ Enable fast mode scan. This will only scan for .1, .100 and .254 on each
 network. This mode is usefull while searching for ranges being used. 
 After you found such range you can make a specific range scan to find online boxes.
 
+.SH USAGE
+If passive mode (-p) or scan range (-r) options arent enabled, netdiscover will scan for common lan addresses.
+.PP
+Screen control keys 
+
+.TP
+\fBh\fR
+Show help screen
+
+.TP
+\fBj\fR
+Scroll down (or down arrow)
+
+.TP
+\fBk\fR
+Scroll up (or up arrow)
+
+.TP
+\fBa\fR
+Show arp replys list
+
+.TP
+\fBr\fR
+Show arp requests list
+
+.TP
+\fBq\fR
+Close help screen or end application
+
+
 .SH AUTHOR
 netdiscover was written by Jaime Peñalba.
 .PP
-This manual page was written by Nicolas Weyland <ufoalien@weyland.ch>,
-for the Debian project (but may be used by others).
+This manual page was originaly written by Nicolas Weyland <ufoalien@weyland.ch>,for the Debian project (but may be used by others). This man page has been added to netdiscover project, and modified from the original.

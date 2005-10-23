@@ -1,47 +1,50 @@
 Netdiscover 0.3 (Currently working on it / beta6)
+   * Changed installation path to sbin
+   * Added man page, Thanks to Nicolas Weyland  <ufoalien@weyland.ch>
+   * Added help screen (pressing "h" while running)
    * Added new screen to display arp request
-	* Fixed screen refresh/display problems
-	* Improved screen interface to display large hosts lists, j/k or up/down
-	  arrow keys can now be used to scroll
-	* Fixed packet length count display
-	* Now arp request sender data is added to the stations list
-	* Improved sniffer packet processing code
-	* Major code cleaning / commenting done
-	* If no interface is specified will autoselect firstone available
-	* Better error handling, including interface and uid checking
-	* Fixed header checks on configure.in, thanks to Charlie Brady for reporting
-	* Supress sleep time between each arp request, instead sleep between each
-	  network scanned, also caled the hardcore mode :) (like in older betas)
-	* Added request count option (-c switch)
-	* Some screen display changes
-	* Supports decimal sleep times
-	* Some changes to support gcc 2.95
-	* Added customizable array for ips scanned on fast mode
-	* Some changes made arround scanning loops, and sleep time, the scan will be 
-	  slower by default, but safer (longer sleeps to avoid packet loss)
-	* Changed usage parameters, to easyer way (thanks to SuD for the idea)
-	* Completing documentation for 0.3 final release
-	* Added support to change last octet of scanning host (option "n")
-	* Solaris and OpenBSD support added, also must work on other unixes
-	* Improved configure.in, now checks the system, libnet.h and pcap.h
-	* Added mac vendor database, and identifing
-	* Added other thread for screen refresh, also refresh time as parameter
-	* Fast scan mode, will only scan for .1, .100 and .254 of each network
-	* Improved arp packet forgery, now doesnt lose packets
-	* No more lamme ip changing at given interface, now you can browse
-	  while scanning, and ioctls where removed
-	* A lot more of fixes for portability
+   * Fixed screen refresh/display problems
+   * Improved screen interface to display large hosts lists, j/k or up/down
+     arrow keys can now be used to scroll
+   * Fixed packet length count display
+   * Now arp request sender data is added to the stations list
+   * Improved sniffer packet processing code
+   * Major code cleaning / commenting done
+   * If no interface is specified will autoselect firstone available
+   * Better error handling, including interface and uid checking
+   * Fixed header checks on configure.in, thanks to Charlie Brady for reporting
+   * Supress sleep time between each arp request, instead sleep between each
+     network scanned, also caled the hardcore mode :) (like in older betas)
+   * Added request count option (-c switch)
+   * Some screen display changes
+   * Supports decimal sleep times
+   * Some changes to support gcc 2.95
+   * Added customizable array for ips scanned on fast mode
+   * Some changes made arround scanning loops, and sleep time, the scan will be 
+     slower by default, but safer (longer sleeps to avoid packet loss)
+   * Changed usage parameters, to easyer way (thanks to SuD for the idea)
+   * Completing documentation for 0.3 final release
+   * Added support to change last octet of scanning host (option "n")
+   * Solaris and OpenBSD support added, also must work on other unixes
+   * Improved configure.in, now checks the system, libnet.h and pcap.h
+   * Added mac vendor database, and identifing
+   * Added other thread for screen refresh, also refresh time as parameter
+   * Fast scan mode, will only scan for .1, .100 and .254 of each network
+   * Improved arp packet forgery, now doesnt lose packets
+   * No more lamme ip changing at given interface, now you can browse
+     while scanning, and ioctls where removed
+   * A lot more of fixes for portability
 
 Netdiscover 0.2 beta (July 17, 2005)
-	* Added getopt for parameter handling
-	* Sleep time parameter added
-	* New passive mode detection
-	* New /8, /16, /24 scan mode
-	* New auto scan mode
-	* Added packet counters
-	* Scan progress added
-	* Nicer interface (no more scrolling!)
-	* Ignore packets with our mac address as source
+   * Added getopt for parameter handling
+   * Sleep time parameter added
+   * New passive mode detection
+   * New /8, /16, /24 scan mode
+   * New auto scan mode
+   * Added packet counters
+   * Scan progress added
+   * Nicer interface (no more scrolling!)
+   * Ignore packets with our mac address as source
 
 Netdiscover 0.1 beta (July 11, 2005)
-	* First beta version released
+   * First beta version released

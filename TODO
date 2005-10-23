@@ -1,6 +1,5 @@
-- Fix scroll mode
-- Clean up arprep and req struct
-- Make help screen
-- Find a fix for OpenBSD high cpu load
+- Add support for pcap format filter as parameter
+- Add identified hosts list
+- Clean up arprep and arpreq struct
 - Sacar arrays de configuracion
 - Read range list from file

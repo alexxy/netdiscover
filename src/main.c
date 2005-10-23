@@ -389,7 +389,7 @@ void scan_range(char *disp, char *sip)
 /* Print usage instructions */
 void usage(char *comando)
 {
-	printf("Netdiscover %s [Active/passive reconnaissance tool]\n"
+	printf("Netdiscover %s [Active/passive arp reconnaissance tool]\n"
 		"Written by: Jaime Penalba <jpenalbae@gmail.com>\n\n"
 		"Usage: %s [-i device] [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]\n"
 		"  -i device: your network device\n"

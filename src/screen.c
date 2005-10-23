@@ -338,17 +338,20 @@ void fill_screen()
        printf("\n"
                "\t  ______________________________________________  \n"
                "\t |                                              | \n"
-               "\t |    \33[1mAbout screen\33[0m                              | \n"
+               "\t |    \33[1mHelp screen\33[0m                               | \n"
                "\t |                                              | \n"
-               "\t |     Airdiscover 0.1-beta3                    | \n"
-               "\t |     Writen by: Jaime Penalba Estebanez       | \n"
-               "\t |     Mailto: jpenalbae@gmail.com              | \n"
+               "\t |     h: show this help screen                 | \n"
+               "\t |     j: scroll down (or down arrow)           | \n"
+               "\t |     k: scroll up   (or up arrow)             | \n"
+               "\t |     a: show arp replys list                  | \n"
+               "\t |     r: show arp requests list                | \n"
+               "\t |     q: exit this screen or end               | \n"
                "\t |                                              | \n"
                "\t  ----------------------------------------------  \n");
    
        
        
-       for (i=17; i<win_sz.ws_row; i++)
+       for (i=20; i<win_sz.ws_row; i++)
            printf("\n");
    }
 

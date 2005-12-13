@@ -1,4 +1,6 @@
-Netdiscover 0.3 (Currently working on it / beta6)
+Netdiscover 0.3 (Currently working on it / beta7)
+   * Hang on Ctrl+C fixed, thanks to SuD for the patch
+   * Improved argument handling, thanks to SuD for reporting
    * Changed installation path to sbin
    * Added man page, Thanks to Nicolas Weyland  <ufoalien@weyland.ch>
    * Added help screen (pressing "h" while running)

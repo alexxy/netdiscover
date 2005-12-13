@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # libtoolT - Provide generalized library-building support services.
-# Generated automatically by  (GNU netdiscover 0.3-beta3)
+# Generated automatically by  (GNU netdiscover 0.3-beta7)
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 #
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
@@ -316,7 +316,7 @@ variables_saved_for_relink="PATH  LD_RUN_PATH GCC_EXEC_PREFIX COMPILER_PATH LIBR
 link_all_deplibs=no
 
 # Compile-time system search path for libraries
-sys_lib_search_path_spec=" /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/ /usr/lib/gcc/i486-linux-gnu/3.3.6/ /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/../../../../i486-linux-gnu/lib/i486-linux-gnu/3.3.6/ /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/../../../../i486-linux-gnu/lib/ /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/../../../i486-linux-gnu/3.3.6/ /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/../../../ /lib/i486-linux-gnu/3.3.6/ /lib/ /usr/lib/i486-linux-gnu/3.3.6/ /usr/lib/"
+sys_lib_search_path_spec=" /usr/lib/gcc/i486-linux-gnu/4.0.3/ /usr/lib/gcc/i486-linux-gnu/4.0.3/ /usr/lib/gcc/i486-linux-gnu/4.0.3/../../../../i486-linux-gnu/lib/i486-linux-gnu/4.0.3/ /usr/lib/gcc/i486-linux-gnu/4.0.3/../../../../i486-linux-gnu/lib/ /usr/lib/gcc/i486-linux-gnu/4.0.3/../../../i486-linux-gnu/4.0.3/ /usr/lib/gcc/i486-linux-gnu/4.0.3/../../../ /lib/i486-linux-gnu/4.0.3/ /lib/ /usr/lib/i486-linux-gnu/4.0.3/ /usr/lib/"
 
 # Run-time system search path for libraries
 sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/X11R6/lib /usr/lib /lib /usr/local/lib /usr/local/toolz/lib /usr/local/enlightenment/lib "
@@ -6942,11 +6942,11 @@ striplib="strip --strip-unneeded"
 
 # Dependencies to place before the objects being linked to create a
 # shared library.
-predep_objects="/usr/lib/gcc-lib/i486-linux-gnu/3.3.6/../../../crti.o /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/crtbeginS.o"
+predep_objects="/usr/lib/gcc/i486-linux-gnu/4.0.3/../../../../lib/crti.o /usr/lib/gcc/i486-linux-gnu/4.0.3/crtbeginS.o"
 
 # Dependencies to place after the objects being linked to create a
 # shared library.
-postdep_objects="/usr/lib/gcc-lib/i486-linux-gnu/3.3.6/crtendS.o /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/../../../crtn.o"
+postdep_objects="/usr/lib/gcc/i486-linux-gnu/4.0.3/crtendS.o /usr/lib/gcc/i486-linux-gnu/4.0.3/../../../../lib/crtn.o"
 
 # Dependencies to place before the objects being linked to create a
 # shared library.
@@ -6958,7 +6958,7 @@ postdeps="-lstdc++ -lm -lgcc_s -lc -lgcc_s"
 
 # The library search path used internally by the compiler when linking
 # a shared library.
-compiler_lib_search_path="-L/usr/lib/gcc-lib/i486-linux-gnu/3.3.6 -L/usr/lib/gcc-lib/i486-linux-gnu/3.3.6/../../.."
+compiler_lib_search_path="-L/usr/lib/gcc/i486-linux-gnu/4.0.3 -L/usr/lib/gcc/i486-linux-gnu/4.0.3 -L/usr/lib/gcc/i486-linux-gnu/4.0.3/../../../../lib -L/usr/lib/gcc/i486-linux-gnu/4.0.3/../../.. -L/lib/../lib -L/usr/lib/../lib"
 
 # Method to check whether dependent libraries are shared objects.
 deplibs_check_method="pass_all"
@@ -7038,7 +7038,7 @@ variables_saved_for_relink="PATH LD_LIBRARY_PATH LD_RUN_PATH GCC_EXEC_PREFIX COM
 link_all_deplibs=no
 
 # Compile-time system search path for libraries
-sys_lib_search_path_spec=" /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/ /usr/lib/gcc/i486-linux-gnu/3.3.6/ /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/../../../../i486-linux-gnu/lib/i486-linux-gnu/3.3.6/ /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/../../../../i486-linux-gnu/lib/ /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/../../../i486-linux-gnu/3.3.6/ /usr/lib/gcc-lib/i486-linux-gnu/3.3.6/../../../ /lib/i486-linux-gnu/3.3.6/ /lib/ /usr/lib/i486-linux-gnu/3.3.6/ /usr/lib/"
+sys_lib_search_path_spec=" /usr/lib/gcc/i486-linux-gnu/4.0.3/ /usr/lib/gcc/i486-linux-gnu/4.0.3/ /usr/lib/gcc/i486-linux-gnu/4.0.3/../../../../i486-linux-gnu/lib/i486-linux-gnu/4.0.3/ /usr/lib/gcc/i486-linux-gnu/4.0.3/../../../../i486-linux-gnu/lib/ /usr/lib/gcc/i486-linux-gnu/4.0.3/../../../i486-linux-gnu/4.0.3/ /usr/lib/gcc/i486-linux-gnu/4.0.3/../../../ /lib/i486-linux-gnu/4.0.3/ /lib/ /usr/lib/i486-linux-gnu/4.0.3/ /usr/lib/"
 
 # Run-time system search path for libraries
 sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/X11R6/lib /usr/lib /lib /usr/local/lib /usr/local/toolz/lib /usr/local/enlightenment/lib "

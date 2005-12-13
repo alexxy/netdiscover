@@ -149,7 +149,7 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 
-SUBDIRS = src
+SUBDIRS = src doc
 
 netdiscoverdocdir = ${prefix}/doc/netdiscover
 netdiscoverdoc_DATA = \

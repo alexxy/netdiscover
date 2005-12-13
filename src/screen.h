@@ -25,7 +25,6 @@
 
 /* Ohh no, more globals */
 char *current_network;
-
  
 /* Structs for counters */
 struct arp_rep_c {

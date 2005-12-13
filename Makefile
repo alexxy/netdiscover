@@ -46,7 +46,7 @@ AR = ar
 AUTOCONF = ${SHELL} /home/weed/Projects/netdiscover/missing --run autoconf
 AUTOHEADER = ${SHELL} /home/weed/Projects/netdiscover/missing --run autoheader
 AUTOMAKE = ${SHELL} /home/weed/Projects/netdiscover/missing --run automake-1.7
-AWK = mawk
+AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
@@ -103,7 +103,7 @@ RANLIB = ranlib
 SET_MAKE = 
 SHELL = /bin/sh
 STRIP = strip
-VERSION = 0.3-beta3
+VERSION = 0.3-beta7
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
@@ -149,7 +149,7 @@ target_cpu = i686
 target_os = linux-gnu
 target_vendor = pc
 
-SUBDIRS = src
+SUBDIRS = src doc
 
 netdiscoverdocdir = ${prefix}/doc/netdiscover
 netdiscoverdoc_DATA = \

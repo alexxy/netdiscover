@@ -23,7 +23,7 @@
  */
  
 #define _GNU_SOURCE
-#define VERSION "0.3-beta6"
+#define VERSION "0.3-beta7"
 
 #include <stdio.h>
 #include <pthread.h>
@@ -155,6 +155,8 @@ int main(int argc, char **argv)
 				break;
 			
 			default:
+            usage(argv[0]);
+				exit(1);
 				break;
 		}
 	}
@@ -380,7 +382,7 @@ void scan_range(char *disp, char *sip)
 	{
 		system("clear");
 		printf("Network range must be 0.0.0.0/8 , /16 or /24\n");
-		exit(1);
+      sighandler(1);
 	}
 	
 }

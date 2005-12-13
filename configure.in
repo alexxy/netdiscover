@@ -4,13 +4,31 @@ dnl If you don't want it to overwrite it,
 dnl 	Please disable it in the Anjuta project configuration
 
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(netdiscover, 0.3-beta6)
+AC_CANONICAL_SYSTEM
+PLATFORM="${target_os}"
+AM_INIT_AUTOMAKE(netdiscover, 0.3-beta7)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
+AC_ISC_POSIX
+AC_PROG_CC
+AM_PROG_CC_STDC
+AC_HEADER_STDC
+
+AM_PROG_LIBTOOL
+
+dnl Checks for header files.
+dnl check for pcap.h
+AC_CHECK_HEADER(pcap.h,,
+	AC_MSG_ERROR(Cannot find pcap.h - You need libpcap installed.))
+
+dnl check for libnet.h
+AC_CHECK_HEADER(libnet.h,,
+	AC_MSG_ERROR(Cannot find libnet.h - You need libnet installed.))
+
 dnl get system information
-AC_CANONICAL_SYSTEM
-case "${target_os}" in
+dnl AC_CANONICAL_HOST
+case "$PLATFORM" in
   solaris*)
     echo "Target OS \"$target_os\" OK"
     LDFLAGS="$LDFLAGS -lsocket -lnsl"
@@ -32,23 +50,6 @@ case "${target_os}" in
     echo  -n "Type enter to continue. "
     read NONE
 esac
-
-AC_ISC_POSIX
-AC_PROG_CC
-AM_PROG_CC_STDC
-AC_HEADER_STDC
-
-AM_PROG_LIBTOOL
-
-dnl Checks for header files.
-dnl check for pcap.h
-AC_CHECK_HEADER(pcap.h,,
-	AC_MSG_ERROR(Cannot find pcap.h - You need libpcap installed.))
-
-dnl check for libnet.h
-AC_CHECK_HEADER(libnet.h,,
-	AC_MSG_ERROR(Cannot find libnet.h - You need libnet installed.))
-
 
 dnl Set PACKAGE SOURCE DIR in config.h.
 packagesrcdir=`cd $srcdir && pwd`

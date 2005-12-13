@@ -48,6 +48,8 @@ struct arp_rep_l *first_arpreq, *last_arpreq;
 struct arp_rep_c *arprep_count;
 struct winsize win_sz;
 pthread_mutex_t *listm;
+extern pthread_t keys;
+
 
 int scroll;
 int smode, oldmode;
@@ -101,15 +103,18 @@ void init_lists()
 /* Handle signals and set terminal */
 void sighandler(int signum)
 {
-	if (signum == SIGCONT)
-    {
-        tcsetattr(0,TCSANOW,&working_settings);
-    }
-    else
-    {
-        tcsetattr(0,TCSANOW,&stored_settings);
-        exit(0);
-    }
+   if (signum == SIGCONT)
+   {
+      tcsetattr(0,TCSANOW,&working_settings);
+   }
+   else
+   {
+      tcsetattr(0,TCSANOW,&stored_settings);
+      signal(SIGINT, SIG_DFL);
+      signal(SIGTERM, SIG_DFL);
+      pthread_kill(keys, signum);
+      exit(0);
+   }
 }
 
 

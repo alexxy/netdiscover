@@ -1,4 +1,5 @@
 Netdiscover 0.3 (Currently working on it / beta7)
+   * MAC vendors list updated
    * Hang on Ctrl+C fixed, thanks to SuD for the patch
    * Improved argument handling, thanks to SuD for reporting
    * Changed installation path to sbin

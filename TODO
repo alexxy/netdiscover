@@ -1,3 +1,4 @@
+- Fix scroll limits
 - Add support for pcap format filter as parameter
 - Add identified hosts list
 - Clean up arprep and arpreq struct

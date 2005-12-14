@@ -31,6 +31,7 @@ extern "C"
 {
 #endif
 
+    /* Functions */
 	char *search_vendor(unsigned char[6]);
 	
 #ifdef __cplusplus

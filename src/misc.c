@@ -42,10 +42,12 @@ char *search_vendor(unsigned char mac[6])
     for (i=0; i<6; i++)
         tmac[i] = toupper(tmac[i]);
 	
-	for (i=0; i<8436; i++)
+    i = 0;
+	while (oui_table[i].prefix != NULL)
 	{
 		if (strcmp(oui_table[i].prefix, tmac) == 0)
 			return oui_table[i].vendor;
+        i++;
 	}
 	
 	return "Unknown vendor";

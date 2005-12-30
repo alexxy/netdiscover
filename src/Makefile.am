@@ -19,6 +19,8 @@ netdiscover_SOURCES = \
 	screen.c\
 	ifaces.h\
 	screen.h\
+	fhandle.c\
+	fhandle.h\
 	misc.c\
 	misc.h\
 	oui.h

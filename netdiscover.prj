@@ -97,7 +97,9 @@ module.source.files=\
 	screen.h\
 	misc.c\
 	misc.h\
-	oui.h
+	oui.h\
+	fhandle.c\
+	fhandle.h
 
 module.pixmap.name=pixmaps
 module.pixmap.type=

@@ -2,5 +2,4 @@
 - Add support for pcap format filter as parameter
 - Add identified hosts list
 - Clean up arprep and arpreq struct
-- Sacar arrays de configuracion
 - Read range list from file

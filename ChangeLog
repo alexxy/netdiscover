@@ -1,7 +1,11 @@
-Netdiscover 0.3 (Currently working on it / beta7)
+Netdiscover 0.3-beta7 (Currently working on it)
+   * Manpage updated with new features and some examples
+   * Added support to read user config files for ranges and fasmode lists
    * MAC vendors list updated
    * Hang on Ctrl+C fixed, thanks to SuD for the patch
    * Improved argument handling, thanks to SuD for reporting
+   
+Netdiscover 0.3-beta6
    * Changed installation path to sbin
    * Added man page, Thanks to Nicolas Weyland  <ufoalien@weyland.ch>
    * Added help screen (pressing "h" while running)
@@ -10,11 +14,15 @@ Netdiscover 0.3 (Currently working on it / beta7)
    * Improved screen interface to display large hosts lists, j/k or up/down
      arrow keys can now be used to scroll
    * Fixed packet length count display
+   
+Netdiscover 0.3-beta5
    * Now arp request sender data is added to the stations list
    * Improved sniffer packet processing code
    * Major code cleaning / commenting done
    * If no interface is specified will autoselect firstone available
    * Better error handling, including interface and uid checking
+   
+Netdiscover 0.3-beta4
    * Fixed header checks on configure.in, thanks to Charlie Brady for reporting
    * Supress sleep time between each arp request, instead sleep between each
      network scanned, also caled the hardcore mode :) (like in older betas)
@@ -26,11 +34,17 @@ Netdiscover 0.3 (Currently working on it / beta7)
    * Some changes made arround scanning loops, and sleep time, the scan will be 
      slower by default, but safer (longer sleeps to avoid packet loss)
    * Changed usage parameters, to easyer way (thanks to SuD for the idea)
+   
+Netdiscover 0.3-beta3
    * Completing documentation for 0.3 final release
    * Added support to change last octet of scanning host (option "n")
    * Solaris and OpenBSD support added, also must work on other unixes
    * Improved configure.in, now checks the system, libnet.h and pcap.h
+   
+Netdiscover 0.3-beta2
    * Added mac vendor database, and identifing
+   
+Netdiscover 0.3-beta1
    * Added other thread for screen refresh, also refresh time as parameter
    * Fast scan mode, will only scan for .1, .100 and .254 of each network
    * Improved arp packet forgery, now doesnt lose packets

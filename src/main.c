@@ -207,10 +207,6 @@ int main(int argc, char **argv)
    if(((fast_ips = fread_list(fpath)) == NULL) || (ignoreconf == 1))
       fast_ips = dfast_ips;
    
-   printf("%s\n%s\n%s\n", fast_ips[0], fast_ips[1], fast_ips[2]);
-   //exit(1);
-   //sighandler(1);
-   
    /* If no mode was selected, enable auto scan */
    if ((erange != 1) && (esniff != 1))
    {

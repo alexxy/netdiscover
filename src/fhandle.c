@@ -53,8 +53,6 @@ char **fread_list(char *file)
    {
       rlist[lcount] = (char *) malloc (sizeof(char) * strlen(line));
       snprintf(rlist[lcount], strlen(line), line);
-      printf("Read: %s", line);
-      printf("Wrote: %s\n", rlist[lcount]);
       lcount++;
    }
    

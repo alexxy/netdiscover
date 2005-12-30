@@ -1,8 +1,8 @@
-.TH netdiscover "8" "October 2005" "netdiscover" "User Commands"
+.TH netdiscover "30" "December 2005" "netdiscover" "User Commands"
 .SH NAME
 netdiscover \- an active/passive arp reconnaissance tool.
 .SH SYNOPSIS
-\fBnetdiscover\fR [-i device] [-r range | -p] [-s time] [-n node] [-c count] [-f] [-S]
+\fBnetdiscover\fR [-i device] [-r range | -p] [-s time] [-n node] [-c count] [-f] [-d] [-S]
 .SH DESCRIPTION
 netdiscover is an active/passive arp reconnaissance tool, mainly developed to gain information about wireless networks without dhcp servers in wardriving scenarios. It can also be used on switched networks. Built on top of libnet and libpcap, it can passively detect online hosts or search for them by sending arp requests. 
 .PP
@@ -50,6 +50,11 @@ Enable fast mode scan. This will only scan for .1, .100 and .254 on each
 network. This mode is usefull while searching for ranges being used. 
 After you found such range you can make a specific range scan to find online boxes.
 
+.TP
+\fB\-d\fR
+Ignore configuration files at home dir, this will use defaults ranges and ips 
+for autoscan and fast mode. See below for information about configuration files.
+
 .SH USAGE
 If passive mode (-p) or scan range (-r) options arent enabled, netdiscover will scan for common lan addresses.
 .PP
@@ -79,8 +84,16 @@ Show arp requests list
 \fBq\fR
 Close help screen or end application
 
+.SH CONFIG FILES
+There are 2 configurations
+.TP
+\fB~/.netdiscover/ranges\fR
+List contaning ranges to be used on autoscan mode.
+.TP
+\fB~/.netdiscover/fastips\fR
+List contaning the last octect of the ips to be scanned on each subnet
 
 .SH AUTHOR
-netdiscover was written by Jaime Peñalba.
+netdiscover was written by Jaime Penalba Estebanez.
 .PP
 This manual page was originaly written by Nicolas Weyland <ufoalien@weyland.ch>,for the Debian project (but may be used by others). This man page has been added to netdiscover project, and modified from the original.

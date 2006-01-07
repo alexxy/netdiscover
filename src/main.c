@@ -99,6 +99,8 @@ int main(int argc, char **argv)
    int c;
    int esniff = 0;
    int erange = 0;
+   int elist = 0;
+   char plist[50];
    struct t_data datos;
    
    /* Some default values */
@@ -117,7 +119,7 @@ int main(int argc, char **argv)
    sprintf(current_network, "Starting.");
 	
    /* Fetch parameters */
-   while ((c = getopt(argc, argv, "i:s:r:n:c:pSfdh")) != EOF)
+   while ((c = getopt(argc, argv, "i:s:r:l:n:c:pSfdh")) != EOF)
    {
       switch (c)
       {
@@ -150,6 +152,11 @@ int main(int argc, char **argv)
             datos.sip = (char *) malloc (sizeof(char) * strlen(optarg));
             sprintf(datos.sip, "%s", optarg);
             erange = 1;
+            break;
+         
+         case 'l':   /* Scan ranges on the given file */
+            sprintf(plist, "%s", optarg);
+            elist = 1;
             break;
          
          case  'f':  /* Enable fast mode */
@@ -191,21 +198,32 @@ int main(int argc, char **argv)
       }
    }
    
-   /* Init libnet and lists */
-   lnet_init(datos.disp);
-   init_lists();
-   system("clear");
-   
    /* Load user config files or set defaults */
    home = getenv("HOME");
    sprintf(rpath, "%s/.netdiscover/ranges", home);
    sprintf(fpath, "%s/.netdiscover/fastips", home);
    free(home);
    
+   /* Read user configured ranges if arent disabled */
    if (((common_net = fread_list(rpath)) == NULL) || (ignoreconf == 1))
       common_net = dcommon_net;
+   /* Read user configured ips for fast mode if arent disabled */
    if(((fast_ips = fread_list(fpath)) == NULL) || (ignoreconf == 1))
       fast_ips = dfast_ips;
+   /* Read range list given by user if specified */
+   if (elist == 1)
+   {
+      if ((common_net = fread_list(plist)) == NULL)
+      {
+         printf("File \"%s\" containing ranges, cannot be read.\n", plist);
+         exit(1);
+      }
+   }
+   
+   /* Init libnet and lists */
+   lnet_init(datos.disp);
+   init_lists();
+   system("clear");
    
    /* If no mode was selected, enable auto scan */
    if ((erange != 1) && (esniff != 1))
@@ -423,10 +441,11 @@ void usage(char *comando)
 {
    printf("Netdiscover %s [Active/passive arp reconnaissance tool]\n"
       "Written by: Jaime Penalba <jpenalbae@gmail.com>\n\n"
-      "Usage: %s [-i device] [-r range | -p] [-s time] [-n node] [-c count] "
-      "[-f] [-d] [-S]\n"
+      "Usage: %s [-i device] [-r range | -l file | -p] [-s time] [-n node] "
+      "[-c count] [-f] [-d] [-S]\n"
       "  -i device: your network device\n"
       "  -r range: scan a given range instead of auto scan. 192.168.6.0/24,/16,/8\n"
+      "  -l file: scan the list of ranges contained into the given file\n"
       "  -p passive mode do not send anything, only sniff\n"
       "  -s time: time to sleep between each arp request (miliseconds)\n"
       "  -c count: number of times to send each arp reques (for nets with packet loss)\n"
@@ -434,6 +453,6 @@ void usage(char *comando)
       "  -S enable sleep time supression betwen each request (hardcore mode)\n"
       "  -f enable fastmode scan, saves a lot of time, recommended for auto\n"
       "  -d ignore home config files for autoscan and fast mode\n\n"
-      "If -p or -r arent enabled, netdiscover will scan for common lan addresses\n",
+      "If -r, -l or -p arent enabled, netdiscover will scan for common lan addresses\n",
       VERSION, comando);
 }

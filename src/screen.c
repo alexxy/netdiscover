@@ -123,16 +123,16 @@ void read_key()
 {
     int ch;
     ch = getchar();
-
+   
     /* Check for arrow keys */
     if ( ch == 27)
     {
         ch = getchar();
-		 
+       
         if (ch == 91)
         {
             ch = getchar();
-
+   
             if (ch == 66)
                 ch = 106;
             else if (ch == 65)
@@ -140,34 +140,34 @@ void read_key()
         }
     }
     
-
+   
     /* Key functions */
-	 if((ch == 107) && (scroll > 0))
-    	scroll -= 1;		// UP
+    if((ch == 107) && (scroll > 0))
+      scroll -= 1;      // UP
     else if ((ch == 106)&&(scroll < (arprep_count->hosts - win_sz.ws_row + 7)))
-		 scroll += 1;		// DOWN
-	 else if (ch == 114)
+       scroll += 1;     // DOWN
+    else if (ch == 114)
     {
-		 smode = 1;	// PRINT REQUEST
+       smode = 1;       // PRINT REQUEST
        scroll = 0;
     }
-	 else if (ch == 97)
+    else if (ch == 97)
     {
-		 smode = 0;	// PRINT ALL
+       smode = 0;       // PRINT ALL
        scroll = 0;
     }
-	 else if ((ch == 113) && (smode != 2) )
-		 sighandler(0);	// QUIT
+    else if ((ch == 113) && (smode != 2) )
+       sighandler(0);   // QUIT
     else if ((ch == 113) && (smode == 2) )
-		 smode = oldmode;	// close screen
+       smode = oldmode; // close screen
     else if (ch == 104)
     {
        scroll = 0;
-		 oldmode = smode;	// PRINT HELP
+       oldmode = smode; // PRINT HELP
        smode = 2;
     }
-	 
-	 print_screen();
+    
+    print_screen();
 }
 
 
@@ -201,8 +201,8 @@ void fill_screen()
    
    pthread_mutex_lock(listm);	
 	
-   sprintf(line, " Currently scanning: %s   |   Our Mac is: %s - %i", 
-           current_network, ourmac, scroll);
+   sprintf(line, " Currently scanning: %s   |   Our Mac is: %s", 
+           current_network, ourmac);
    printf("%s", line);
 	
    /* Fill with spaces */

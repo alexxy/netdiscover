@@ -1,15 +1,15 @@
-.TH netdiscover "30" "December 2005" "netdiscover" "User Commands"
+.TH netdiscover "30" "January 2006" "netdiscover" "User Commands"
 .SH NAME
 netdiscover \- an active/passive arp reconnaissance tool.
 .SH SYNOPSIS
-\fBnetdiscover\fR [-i device] [-r range | -p] [-s time] [-n node] [-c count] [-f] [-d] [-S]
+\fBnetdiscover\fR [-i device] [-r range | -l file | -p] [-s time] [-n node] [-c count] [-f] [-d] [-S]
 .SH DESCRIPTION
-netdiscover is an active/passive arp reconnaissance tool, mainly developed to gain information about wireless networks without dhcp servers in wardriving scenarios. It can also be used on switched networks. Built on top of libnet and libpcap, it can passively detect online hosts or search for them by sending arp requests. 
+netdiscover is an active/passive arp reconnaissance tool, initialy developed to gain information about wireless networks without dhcp servers in wardriving scenarios. It can also be used on switched networks. Built on top of libnet and libpcap, it can passively detect online hosts or search for them by sending arp requests. 
 .PP
 Furthermore, it can be used to inspect your network's arp traffic, or find network addresses using auto scan mode, which will scan for common local networks. 
 .SH OPTIONS
 .TP
-\fB\-i\fR device 
+\fB\-i\fR device
 The network interface to sniff and inject packets. If no interface is
 specified, first available will be used.
 
@@ -17,6 +17,10 @@ specified, first available will be used.
 \fB\-r\fR range
 Scan a given range instead of auto scan. Valid range values area for example:
 192.168.0.0/24, 192.168.0.0/16 or 192.168.0.0/8.
+
+.TP
+\fB\-l\fR file
+Scan ranges contained on the given file, it must contain one range per line.
 
 .TP
 \fB\-p\fR
@@ -56,7 +60,7 @@ Ignore configuration files at home dir, this will use defaults ranges and ips
 for autoscan and fast mode. See below for information about configuration files.
 
 .SH USAGE
-If passive mode (-p) or scan range (-r) options arent enabled, netdiscover will scan for common lan addresses.
+If passive mode (-p), scan list (-l) or scan range (-r) options arent enabled, netdiscover will scan for common lan addresses.
 .PP
 Screen control keys 
 
@@ -85,15 +89,31 @@ Show arp requests list
 Close help screen or end application
 
 .SH CONFIG FILES
-There are 2 configurations
+There are 2 configuration files that netdiscover will look for, each time it is
+executed, if file doesnt exist it will use default values. You can use the -d switch to disable reading and loading configuration files.
+
 .TP
 \fB~/.netdiscover/ranges\fR
-List contaning ranges to be used on autoscan mode.
+This file contains a list of ranges (one per line) used for auto scan mode
+instead of default ranges. By default netdiscover will use a list of common
+ranges used on local networks.
+
+Example:\n
+ 192.168.21.0/24
+ 172.26.0.0/16
+ 10.0.0.0/8
+
 .TP
 \fB~/.netdiscover/fastips\fR
-List contaning the last octect of the ips to be scanned on each subnet
+List contaning the last octect of the ips to be scanned on each subnet, when using fast mode, by default (1,100,154).
+
+Example:\n
+ 1
+ 10
+ 25
+ 254
 
 .SH AUTHOR
 netdiscover was written by Jaime Penalba Estebanez.
 .PP
-This manual page was originaly written by Nicolas Weyland <ufoalien@weyland.ch>,for the Debian project (but may be used by others). This man page has been added to netdiscover project, and modified from the original.
+This manual page was originaly written by Nicolas Weyland, for the Debian project. This man page has been merged into netdiscover project, and modified from the original.

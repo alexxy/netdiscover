@@ -1,4 +1,5 @@
 Netdiscover 0.3-beta7 (Currently working on it)
+   * Added support to read ranges from a given file using -l switch
    * Manpage updated with new features and some examples
    * Added support to read user config files for ranges and fasmode lists
    * MAC vendors list updated

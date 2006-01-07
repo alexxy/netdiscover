@@ -3,14 +3,14 @@
 0=35
 1=56
 2=7
-3=1
-4=2
+3=4
+4=5
 5=25
 6=1
 7=27
-8=104
+8=205
 9=150
-10=204
+10=218
 
 [filemarkers]
 0=
@@ -37,17 +37,17 @@ RunInTerminal=true
 clean before build=false
 
 [filelist]
-0=/home/weed/Proyectos/netdiscover/src/fhandle.h
-1=/home/weed/Proyectos/netdiscover/src/fhandle.c
-2=/home/weed/Proyectos/netdiscover/README
-3=/home/weed/Proyectos/netdiscover/TODO
-4=/home/weed/Proyectos/netdiscover/ChangeLog
-5=/home/weed/Proyectos/netdiscover/src/ifaces.h
-6=/home/weed/Proyectos/netdiscover/src/misc.h
-7=/home/weed/Proyectos/netdiscover/src/screen.h
-8=/home/weed/Proyectos/netdiscover/src/screen.c
-9=/home/weed/Proyectos/netdiscover/src/ifaces.c
-10=/home/weed/Proyectos/netdiscover/src/main.c
+0=/home/weed/Projects/netdiscover/src/fhandle.h
+1=/home/weed/Projects/netdiscover/src/fhandle.c
+2=/home/weed/Projects/netdiscover/README
+3=/home/weed/Projects/netdiscover/TODO
+4=/home/weed/Projects/netdiscover/ChangeLog
+5=/home/weed/Projects/netdiscover/src/ifaces.h
+6=/home/weed/Projects/netdiscover/src/misc.h
+7=/home/weed/Projects/netdiscover/src/screen.h
+8=/home/weed/Projects/netdiscover/src/screen.c
+9=/home/weed/Projects/netdiscover/src/ifaces.c
+10=/home/weed/Projects/netdiscover/src/main.c
 
 [Project Tree]
 0=0

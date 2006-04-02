@@ -1,3 +1,5 @@
+- Make parsable output compatible with the three view modes
+- Implement network guessing mode
 - Fix scroll limits
 - Add support for pcap format filter as parameter
 - Add identified hosts list

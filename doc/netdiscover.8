@@ -1,8 +1,8 @@
-.TH netdiscover "30" "January 2006" "netdiscover" "User Commands"
+.TH netdiscover "8" "February 2006" "netdiscover" "User Commands"
 .SH NAME
 netdiscover \- an active/passive arp reconnaissance tool.
 .SH SYNOPSIS
-\fBnetdiscover\fR [-i device] [-r range | -l file | -p] [-s time] [-n node] [-c count] [-f] [-d] [-S]
+\fBnetdiscover\fR [-i device] [-r range | -l file | -p] [-s time] [-n node] [-c count] [-f] [-d] [-S] [-P] [-L]
 .SH DESCRIPTION
 netdiscover is an active/passive arp reconnaissance tool, initialy developed to gain information about wireless networks without dhcp servers in wardriving scenarios. It can also be used on switched networks. Built on top of libnet and libpcap, it can passively detect online hosts or search for them by sending arp requests. 
 .PP
@@ -58,6 +58,16 @@ After you found such range you can make a specific range scan to find online box
 \fB\-d\fR
 Ignore configuration files at home dir, this will use defaults ranges and ips 
 for autoscan and fast mode. See below for information about configuration files.
+
+.TP
+\fB\-P\fR
+Produces output suitable to be redirected into a file or be parsed by another 
+program, instead of using interactive mode. Enabling this option, netdiscover 
+will stop after scanning given ranges.
+
+.TP
+\fB\-L\fR
+When using -P, continue program execution after the active scan phase to capture ARP packets passively.
 
 .SH USAGE
 If passive mode (-p), scan list (-l) or scan range (-r) options arent enabled, netdiscover will scan for common lan addresses.

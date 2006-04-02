@@ -4,6 +4,9 @@
  *  Mon Jun 27 04:56:18 2005
  *  Copyright  2005  Jaime Penalba Estebanez
  *  jpenalbae@gmail.com
+ *
+ *  Contributors:
+ *   Parsable output by Guillaume Pratte <guillaume@guillaumepratte.net>
  ****************************************************************************/
 
 /*

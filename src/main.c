@@ -4,6 +4,9 @@
  *  Sun Jul  3 07:35:24 2005
  *  Copyright  2005  Jaime Penalba Estebanez
  *  jpenalbae@gmail.com
+ *
+ *  Contributors:
+ *   Parsable output by Guillaume Pratte <guillaume@guillaumepratte.net>
  ****************************************************************************/
 
 /*
@@ -44,6 +47,7 @@ struct t_data {
 
 void *inject_arp(void *arg);
 void *screen_refresh(void *arg);
+void *parsable_screen_refresh(void *arg);
 void scan_range(char *disp, char *sip);
 void usage();
 
@@ -110,6 +114,9 @@ int main(int argc, char **argv)
    sleept = 99;
    node = 67;
    pcount = 1;
+   /* Globals defined in screen.h */
+   parsable_output = 0;
+   continue_listening = 0;
    
    /* Config file handling */
    char fpath[50], rpath[50];
@@ -119,7 +126,7 @@ int main(int argc, char **argv)
    sprintf(current_network, "Starting.");
 	
    /* Fetch parameters */
-   while ((c = getopt(argc, argv, "i:s:r:l:n:c:pSfdh")) != EOF)
+   while ((c = getopt(argc, argv, "i:s:r:l:n:c:pSfdPLh")) != EOF)
    {
       switch (c)
       {
@@ -165,6 +172,14 @@ int main(int argc, char **argv)
 
          case 'd':   /* Ignore home config files */
             ignoreconf = 1;
+            break;
+
+         case 'P':   /* Produces parsable output (vs interactive screen) */
+            parsable_output = 1;
+            break;
+
+         case 'L':   /* Continue to listen in parsable output mode after active scan is completed */
+            continue_listening = 1;
             break;
 
          case 'h':   /* Show help */
@@ -223,7 +238,6 @@ int main(int argc, char **argv)
    /* Init libnet and lists */
    lnet_init(datos.disp);
    init_lists();
-   system("clear");
    
    /* If no mode was selected, enable auto scan */
    if ((erange != 1) && (esniff != 1))
@@ -232,10 +246,19 @@ int main(int argc, char **argv)
    }
    
    /* Start the execution */
-   pthread_create(&screen, NULL, screen_refresh, (void *)NULL);
-   pthread_create(&keys, NULL, keys_thread, (void *)NULL);
+   if (parsable_output)
+   {
+      pthread_create(&screen, NULL, parsable_screen_refresh, (void *)NULL);
+   }
+   else
+   {
+      system("clear");
+      pthread_create(&screen, NULL, screen_refresh, (void *)NULL);
+      pthread_create(&keys, NULL, keys_thread, (void *)NULL);
+   }
+
    pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos);
-   
+
    if (esniff == 1)
    {
       current_network = "(passive)";
@@ -245,11 +268,11 @@ int main(int argc, char **argv)
    {
       if (pthread_create(&injection, NULL, inject_arp, (void *)&datos))
          perror("Could not create injection thread");
-      
+
       pthread_join(sniffer,NULL);
    }
-   
-   
+
+
    return 0;
 }
 
@@ -264,6 +287,16 @@ void *screen_refresh(void *arg)
 	}
 }
 
+/* Refresh parsable screen function called by screen thread */
+void *parsable_screen_refresh(void *arg)
+{
+	print_header();
+	while (1==1)
+	{
+		print_parsable_screen();
+        usleep(500000); /* half a second */
+	}
+}
 
 /* Start the arp injection on the given network device */
 void *inject_arp(void *arg)
@@ -293,6 +326,11 @@ void *inject_arp(void *arg)
    
    sprintf(current_network, "Finished!");
    lnet_destroy();
+
+   if(parsable_output)
+   {
+      parsable_output_scan_completed(); /* defined in screen.c */
+   }
    
    return NULL;
 }
@@ -442,17 +480,19 @@ void usage(char *comando)
    printf("Netdiscover %s [Active/passive arp reconnaissance tool]\n"
       "Written by: Jaime Penalba <jpenalbae@gmail.com>\n\n"
       "Usage: %s [-i device] [-r range | -l file | -p] [-s time] [-n node] "
-      "[-c count] [-f] [-d] [-S]\n"
+      "[-c count] [-f] [-d] [-S] [-P] [-C]\n"
       "  -i device: your network device\n"
       "  -r range: scan a given range instead of auto scan. 192.168.6.0/24,/16,/8\n"
       "  -l file: scan the list of ranges contained into the given file\n"
-      "  -p passive mode do not send anything, only sniff\n"
+      "  -p passive mode: do not send anything, only sniff\n"
       "  -s time: time to sleep between each arp request (miliseconds)\n"
-      "  -c count: number of times to send each arp reques (for nets with packet loss)\n"
       "  -n node: last ip octet used for scanning (from 2 to 253)\n"
-      "  -S enable sleep time supression betwen each request (hardcore mode)\n"
+      "  -c count: number of times to send each arp reques (for nets with packet loss)\n"
       "  -f enable fastmode scan, saves a lot of time, recommended for auto\n"
-      "  -d ignore home config files for autoscan and fast mode\n\n"
-      "If -r, -l or -p arent enabled, netdiscover will scan for common lan addresses\n",
+      "  -d ignore home config files for autoscan and fast mode\n"
+      "  -S enable sleep time supression betwen each request (hardcore mode)\n"
+      "  -P print results in a format suitable for parsing by another program\n"
+      "  -L in parsable output mode (-P), continue listening after the active scan is completed\n\n"
+      "If -r, -l or -p are not enabled, netdiscover will scan for common lan addresses.\n",
       VERSION, comando);
 }

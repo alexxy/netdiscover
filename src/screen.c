@@ -4,6 +4,9 @@
  *  Tue Jul 12 03:23:41 2005
  *  Copyright  2005  Jaime Penalba Estebanez
  *  jpenalbae@gmail.com
+ *
+ *  Contributors:
+ *   Parsable output by Guillaume Pratte <guillaume@guillaumepratte.net>
  ****************************************************************************/
 
 /*
@@ -43,17 +46,17 @@
 
 /* Shity globals */
 struct termios stored_settings, working_settings;
-struct arp_rep_l *first_arprep, *last_arprep;
+struct arp_rep_l *first_arprep, *last_arprep, *last_arprep_printed;
 struct arp_rep_l *first_arpreq, *last_arpreq;
 struct arp_rep_c *arprep_count;
 struct winsize win_sz;
 pthread_mutex_t *listm;
 extern pthread_t keys;
 
-
 int scroll;
 int smode, oldmode;
 char line[300], tline[300];
+char blank[] = " ";
 
 
 /* Inits lists with null pointers, sighandlers, etc */
@@ -69,6 +72,7 @@ void init_lists()
    /* ARP reply packets lists */
    first_arprep = (struct arp_rep_l *) NULL;
    last_arprep = (struct arp_rep_l *) NULL;
+   last_arprep_printed = (struct arp_rep_l *) NULL;
 
    /* ARP request packets lists */
    first_arpreq = (struct arp_rep_l *) NULL;
@@ -88,11 +92,11 @@ void init_lists()
    signal( SIGABRT,   sighandler );
    signal( SIGCONT,   sighandler );
 
-	/* Set console properties to read keys */
+   /* Set console properties to read keys */
    tcgetattr(0,&stored_settings);
    working_settings = stored_settings;
 
-	working_settings.c_lflag &= ~(ICANON|ECHO);
+   working_settings.c_lflag &= ~(ICANON|ECHO);
    working_settings.c_cc[VTIME] = 0;
    working_settings.c_cc[VMIN] = 1;
 
@@ -112,7 +116,10 @@ void sighandler(int signum)
       tcsetattr(0,TCSANOW,&stored_settings);
       signal(SIGINT, SIG_DFL);
       signal(SIGTERM, SIG_DFL);
-      pthread_kill(keys, signum);
+
+      if (!parsable_output)
+         pthread_kill(keys, signum);
+
       exit(0);
    }
 }
@@ -123,24 +130,24 @@ void read_key()
 {
     int ch;
     ch = getchar();
-   
+
     /* Check for arrow keys */
     if ( ch == 27)
     {
         ch = getchar();
-       
+
         if (ch == 91)
         {
             ch = getchar();
-   
+
             if (ch == 66)
                 ch = 106;
             else if (ch == 65)
                 ch = 107;
         }
     }
-    
-   
+
+
     /* Key functions */
     if((ch == 107) && (scroll > 0))
       scroll -= 1;      // UP
@@ -166,7 +173,7 @@ void read_key()
        oldmode = smode; // PRINT HELP
        smode = 2;
     }
-    
+
     print_screen();
 }
 
@@ -174,18 +181,18 @@ void read_key()
 /* Clear and fill the screen */
 void print_screen()
 {
-	/* Get Console Size */
+   /* Get Console Size */
    if (ioctl(0, TIOCGWINSZ, &win_sz) < 0)
    {
-   	win_sz.ws_row = 24;
+      win_sz.ws_row = 24;
       win_sz.ws_col = 80;
    }
-	 
-	/* Flush and print screen */
-	fprintf( stderr, "\33[1;1H" );
-	fill_screen();
-	fprintf( stderr, "\33[J" );
-	fflush(stdout);
+
+   /* Flush and print screen */
+   fprintf( stderr, "\33[1;1H" );
+   fill_screen();
+   fprintf( stderr, "\33[J" );
+   fflush(stdout);
 }
 
 
@@ -195,7 +202,6 @@ void fill_screen()
 {
    int x, j;
    struct arp_rep_l *arprep_l;
-   char blank[] = " ";
 	
    x = 0;
    
@@ -225,15 +231,8 @@ void fill_screen()
          printf(" ");
    printf("\n");
 	
-	
    /* Print Header and counters */
-   printf(" _____________________________________________________________________________\n");
-   if (smode == 0 || (oldmode == 0 && smode == 2))
-   	printf("   IP            At MAC Address      Count  Len   MAC Vendor                   \n");
-   else if (smode == 1 || (oldmode == 1 && smode == 2))
-   	printf("   IP            At MAC Address      Requests IP     Count                     \n");
-   printf(" ----------------------------------------------------------------------------- \n");
-
+   print_header();
 
    /* Print each found station trough arp reply */
    if (smode == 0)
@@ -244,34 +243,7 @@ void fill_screen()
       {
          if (x >= scroll)
          {
-            sprintf(line, " ");
-            sprintf(tline, " ");
-            
-            /* Set IP */
-            sprintf(tline, "%s ", arprep_l->sip);
-            strcat(line, tline);
-            
-            /* Fill with spaces */
-            for (j=strlen(line); j<17; j++)
-               strcat(line, blank);
-            
-            /* IP & MAC */
-            sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x    ",
-               arprep_l->header->smac[0], arprep_l->header->smac[1],
-               arprep_l->header->smac[2], arprep_l->header->smac[3],
-               arprep_l->header->smac[4], arprep_l->header->smac[5]);
-            strcat(line, tline);
-            
-            /* Count, Length & Vendor */
-            sprintf(tline, "%02d    %03d   %s", arprep_l->count, 
-                    arprep_l->header->length, arprep_l->vendor );
-            strcat(line, tline);
-            
-            /* Fill again with spaces */
-            for (j=strlen(line); j<win_sz.ws_col - 1; j++)
-               strcat(line, blank);
-            
-            printf("%s\n", line);
+            print_arp_reply_line(arprep_l);
          }
          
          arprep_l = arprep_l->next;
@@ -290,42 +262,8 @@ void fill_screen()
       while(arprep_l != NULL)
       {
          if (x >= scroll)
-         {  
-            sprintf(line, " ");
-            sprintf(tline, " ");
-            
-            /* Get source IP */
-            sprintf(tline, "%s ", arprep_l->sip);
-            strcat(line, tline);
-            
-            /* Fill with spaces */
-            for (j=strlen(line); j<17; j++)
-               strcat(line, blank);
-            
-            /* Get source MAC */
-            sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x   ",
-               arprep_l->header->smac[0], arprep_l->header->smac[1],
-               arprep_l->header->smac[2], arprep_l->header->smac[3],
-               arprep_l->header->smac[4], arprep_l->header->smac[5]);
-            strcat(line, tline);
-            
-            /* Get destination IP */
-            sprintf(tline, "%s", arprep_l->dip);
-            strcat(line, tline);
-            
-            /* Fill with spaces */
-            for (j=strlen(line); j<54; j++)
-               strcat(line, blank);
-            
-            /* Count, Length & Vendor */
-            sprintf(tline, "%02d", arprep_l->count);
-            strcat(line, tline);
-            
-            /* Fill again with spaces */
-            for (j=strlen(line); j<win_sz.ws_col - 1; j++)
-               strcat(line, blank);
-            
-            printf("%s\n", line);
+         {
+            print_arp_request_line(arprep_l);
          }
          
          arprep_l = arprep_l->next;
@@ -361,6 +299,163 @@ void fill_screen()
    }
 
    pthread_mutex_unlock(listm);
+}
+
+/* Print Header and counters */
+void print_header()
+{
+	printf(" _____________________________________________________________________________\n");
+	if (smode == 0 || (oldmode == 0 && smode == 2))
+		printf("   IP            At MAC Address      Count  Len   MAC Vendor                   \n");
+	else if (smode == 1 || (oldmode == 1 && smode == 2))
+		printf("   IP            At MAC Address      Requests IP     Count                     \n");
+	printf(" ----------------------------------------------------------------------------- \n");
+}
+
+void print_parsable_screen()
+{
+	pthread_mutex_lock(listm);
+	
+	/* Header is printed in main.c in parsable_screen_refresh() */
+
+	/* We initialize our read pointer if there are elements in the list */	
+	if (last_arprep_printed == NULL && first_arprep != NULL)
+	{
+		last_arprep_printed = first_arprep;
+		print_parsable_line(last_arprep_printed);
+	}
+	
+	/* We print what we did not read yet in the list */
+	if (last_arprep_printed != NULL)
+	{
+		while (last_arprep_printed->next != NULL)
+		{
+			last_arprep_printed = last_arprep_printed->next;
+			print_parsable_line(last_arprep_printed);
+		}
+	}
+	
+	pthread_mutex_unlock(listm);
+}
+
+void print_parsable_line(struct arp_rep_l *arprep_l)
+{
+	if (smode == 0)
+	{
+		/* Print each found station trough arp reply */
+		print_arp_reply_line(last_arprep_printed);
+	}
+	else if (smode == 1)
+	{
+		/* Print only arp request */
+		print_arp_request_line(last_arprep_printed);
+	}
+}
+
+/* Print an ARP reply line, with IP, MAC, etc */
+void print_arp_reply_line(struct arp_rep_l *arprep_l)
+{
+	int j;
+
+	sprintf(line, " ");
+	sprintf(tline, " ");
+	
+	/* Set IP */
+	sprintf(tline, "%s ", arprep_l->sip);
+	strcat(line, tline);
+	
+	/* Fill with spaces */
+	for (j=strlen(line); j<17; j++)
+		strcat(line, blank);
+	
+	/* IP & MAC */
+	sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x    ",
+		arprep_l->header->smac[0], arprep_l->header->smac[1],
+		arprep_l->header->smac[2], arprep_l->header->smac[3],
+		arprep_l->header->smac[4], arprep_l->header->smac[5]);
+	strcat(line, tline);
+	
+	/* Count, Length & Vendor */
+	sprintf(tline, "%02d    %03d   %s", arprep_l->count, 
+		arprep_l->header->length, arprep_l->vendor );
+	strcat(line, tline);
+	
+	/* Fill again with spaces */
+	for (j=strlen(line); j<win_sz.ws_col - 1; j++)
+		strcat(line, blank);
+	
+	printf("%s\n", line);
+}
+
+/* Print an ARP request line, with IP, MAC, etc */
+void print_arp_request_line(struct arp_rep_l *arprep_l)
+{
+	int j;
+
+	sprintf(line, " ");
+	sprintf(tline, " ");
+	
+	/* Get source IP */
+	sprintf(tline, "%s ", arprep_l->sip);
+	strcat(line, tline);
+	
+	/* Fill with spaces */
+	for (j=strlen(line); j<17; j++)
+		strcat(line, blank);
+	
+	/* Get source MAC */
+	sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x   ",
+		arprep_l->header->smac[0], arprep_l->header->smac[1],
+		arprep_l->header->smac[2], arprep_l->header->smac[3],
+		arprep_l->header->smac[4], arprep_l->header->smac[5]);
+	strcat(line, tline);
+	
+	/* Get destination IP */
+	sprintf(tline, "%s", arprep_l->dip);
+	strcat(line, tline);
+	
+	/* Fill with spaces */
+	for (j=strlen(line); j<54; j++)
+		strcat(line, blank);
+	
+	/* Count, Length & Vendor */
+	sprintf(tline, "%02d", arprep_l->count);
+	strcat(line, tline);
+	
+	/* Fill again with spaces */
+	for (j=strlen(line); j<win_sz.ws_col - 1; j++)
+		strcat(line, blank);
+	
+	printf("%s\n", line);
+}
+
+void parsable_output_scan_completed()
+{
+	char plural = '\0';
+
+	/* Sleep a little to give a chance for all replies to come back */
+	sleep(0.5);
+
+	pthread_mutex_lock(listm);
+
+	if ( arprep_count->hosts > 1 )
+	{
+		plural = 's';
+	}
+	printf("-- Active scan completed, %i IP%c found.", arprep_count->hosts, plural);
+
+	pthread_mutex_unlock(listm);
+
+	if( continue_listening )
+	{
+		printf(" Continuing to listen passively.\n");
+	}
+	else
+	{
+		printf("\n");
+		sighandler(0); // QUIT
+	}
+
 }
 
 

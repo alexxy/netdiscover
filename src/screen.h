@@ -4,6 +4,9 @@
  *  Tue Jul 12 03:22:19 2005
  *  Copyright  2005  Jaime Penalba Estebanez
  *  jpenalbae@gmail.com
+ *
+ *  Contributors:
+ *   Parsable output by Guillaume Pratte <guillaume@guillaumepratte.net>
  ****************************************************************************/
 
 /*
@@ -25,6 +28,7 @@
 
 /* Ohh no, more globals */
 char *current_network;
+int parsable_output, continue_listening;
  
 /* Structs for counters */
 struct arp_rep_c {
@@ -67,6 +71,12 @@ struct arp_rep_l {
 /* Screen functions */
 void print_screen();
 void fill_screen();
+void print_header();
+void print_parsable_screen();
+void print_parsable_line(struct arp_rep_l *);
+void print_arp_reply_line(struct arp_rep_l *);
+void print_arp_request_line(struct arp_rep_l *);
+void parsable_output_scan_completed();
 void read_key();
 void sighandler(int);
 

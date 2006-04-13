@@ -324,6 +324,8 @@ void *inject_arp(void *arg)
       free(common_net);
    }
    
+   /* Wait for last arp replys and mark as scan finished */
+   sleep(2);
    sprintf(current_network, "Finished!");
    lnet_destroy();
 

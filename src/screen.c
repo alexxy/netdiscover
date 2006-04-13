@@ -151,7 +151,7 @@ void read_key()
     /* Key functions */
     if((ch == 107) && (scroll > 0))
       scroll -= 1;      // UP
-    else if ((ch == 106)&&(scroll < (arprep_count->hosts - win_sz.ws_row + 7)))
+    else if ((ch == 106)&&(scroll < (arprep_count->hosts - 1)))
        scroll += 1;     // DOWN
     else if (ch == 114)
     {

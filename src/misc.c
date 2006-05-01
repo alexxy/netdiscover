@@ -33,21 +33,22 @@
 
 char *search_vendor(unsigned char mac[6])
 {
-	char tmac[6];
+	char tmac[7];
 	int i = 0;
 	
 	sprintf(tmac, "%02x%02x%02x", mac[0], mac[1], mac[2]);
 
-    /* Convert mac prefix to upper */
-    for (i=0; i<6; i++)
-        tmac[i] = toupper(tmac[i]);
+	/* Convert mac prefix to upper */
+	for (i=0; i<6; i++)
+	   tmac[i] = toupper(tmac[i]);
 	
-    i = 0;
+	i = 0;
+
 	while (oui_table[i].prefix != NULL)
 	{
 		if (strcmp(oui_table[i].prefix, tmac) == 0)
 			return oui_table[i].vendor;
-        i++;
+        	i++;
 	}
 	
 	return "Unknown vendor";

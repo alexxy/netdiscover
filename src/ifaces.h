@@ -51,9 +51,10 @@ extern "C"
 	// Shitty globals
 	char *ourmac, errbuf[PCAP_ERRBUF_SIZE];
 	
-	// Sniffer Functions
+	// Sniffer/Packet processing Functions
 	void *start_sniffer(void *);
-	void proccess_packet(u_char *, struct pcap_pkthdr *,const u_char *);
+    void process_arp_header(void *, u_int8_t, const u_char *);
+	void process_packet(u_char *, struct pcap_pkthdr *, const u_char *);
 		
 	// ARP Generation & Injection
 	void lnet_init(char *);

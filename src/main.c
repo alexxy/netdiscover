@@ -105,6 +105,11 @@ int main(int argc, char **argv)
    int erange = 0;
    int elist = 0;
    char plist[50];
+
+   /* Config file handling */
+   char fpath[50], rpath[50];
+   char *home;
+
    struct t_data datos;
 
    /* Some default values */
@@ -114,13 +119,10 @@ int main(int argc, char **argv)
    sleept = 99;
    node = 67;
    pcount = 1;
+
    /* Globals defined in screen.h */
    parsable_output = 0;
    continue_listening = 0;
-
-   /* Config file handling */
-   char fpath[50], rpath[50];
-   char *home;
 
    current_network = (char *) malloc ((sizeof(char)) * 16);
    sprintf(current_network, "Starting.");

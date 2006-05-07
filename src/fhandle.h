@@ -30,7 +30,7 @@ extern "C"
 {
 #endif
 
-   
+
    // File handling functions
    char **fread_list(char *);
 

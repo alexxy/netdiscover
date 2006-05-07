@@ -26,17 +26,27 @@
  */
 
 
+#define NARP_REQUEST 1
+#define NARP_REPLY 2
+
 /* Ohh no, more globals */
 char *current_network;
 int parsable_output, continue_listening;
- 
-/* Structs for counters */
+
+/* Structs for arp reply counters */
 struct arp_rep_c {
 	unsigned int count;
 	unsigned int hosts;
 	unsigned int length;
 };
- 
+
+/* Structs for arp request counters */
+struct arp_req_c {
+    unsigned int count;
+    unsigned int hosts;
+    unsigned int length;
+};
+
 /* holds headers packet data */
 struct p_header {
 	unsigned char smac[6];
@@ -50,6 +60,8 @@ struct arp_req_l {
 	struct p_header *header;
 	char *sip;
 	char *dip;
+    char *vendor;
+    short type;
 	unsigned int count;
 	struct arp_req_l *next;
 };
@@ -75,7 +87,7 @@ void print_header();
 void print_parsable_screen();
 void print_parsable_line(struct arp_rep_l *);
 void print_arp_reply_line(struct arp_rep_l *);
-void print_arp_request_line(struct arp_rep_l *);
+void print_arp_request_line(struct arp_req_l *);
 void parsable_output_scan_completed();
 void read_key();
 void sighandler(int);
@@ -83,4 +95,4 @@ void sighandler(int);
 /* Lists functions */
 void init_lists();
 void arprep_add(struct arp_rep_l *);
-void arpreq_add(struct arp_rep_l *);
+void arpreq_add(struct arp_req_l *);

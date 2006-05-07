@@ -95,60 +95,87 @@ void *start_sniffer(void *args)
 	pcap_setfilter(descr, &fp);
 	
 	/* Start loop for packet capture */
-	pcap_loop(descr, -1, (pcap_handler)proccess_packet, NULL);
+	pcap_loop(descr, -1, (pcap_handler)process_packet, NULL);
 
 	return NULL;
 }
 
 
 /* Handle packets recived from pcap_loop */
-void proccess_packet(u_char *args, struct pcap_pkthdr* pkthdr,const u_char*
-        packet)
+void process_packet(u_char *args, struct pcap_pkthdr* pkthdr,
+                    const u_char* packet)
 {
-   struct p_header *new_header;
-   
-   /* Get packet header data and fill struct */
-   new_header = (struct p_header *) malloc (sizeof(struct p_header));
-   memcpy(new_header->dmac, packet, 6);	  /* dest mac    */
-   memcpy(new_header->smac, packet + 6, 6); /* src mac     */
-   new_header->length = pkthdr->len;	     /* Packet size */
-   
-   /* Discard packets with our mac as source */
-   if (memcmp(new_header->smac, smac, 6) != 0)
-   {
-      unsigned char type[2];
-      struct arp_rep_l *new_arprep_l;
-   
-      new_arprep_l = (struct arp_rep_l *) malloc (sizeof(struct arp_rep_l));
-      new_arprep_l->sip = (char *) malloc (sizeof(char) * 16);
-      new_arprep_l->dip = (char *) malloc (sizeof(char) * 16);
-      
-      /* Parse ARP data and fill struct */
-      memcpy(type, packet + 20, 2); 		/* ARP Opcode */
-      new_arprep_l->header = new_header;	/* Add header */
-      new_arprep_l->count = 1;				/* Count      */
-      new_arprep_l->next = NULL;
-      
-      /* Source IP */
-      sprintf(new_arprep_l->sip, "%d.%d.%d.%d",
-         packet[28], packet[29], packet[30], packet[31]);
-      
-      /* Destination IP */
-      sprintf(new_arprep_l->dip, "%d.%d.%d.%d",
-         packet[38], packet[39], packet[40], packet[41]);
-      
-      /* Check if its ARP request or reply, and add it to list */
-      if (memcmp(type, ARP_REPLY, 2) == 0)
-      {
-         new_arprep_l->type = 2;
-         arprep_add(new_arprep_l);
-      }
-      else if (memcmp(type, ARP_REQUEST, 2) == 0)
-      {
-         new_arprep_l->type = 1;
-         arpreq_add(new_arprep_l);
-      }
-   }
+    struct p_header *new_header;
+    new_header = (struct p_header *) malloc (sizeof(struct p_header));
+
+    /* Get packet ethernet header data and fill struct */
+    memcpy(new_header->dmac, packet, 6);         /* dest mac    */
+    memcpy(new_header->smac, packet + 6, 6);     /* src mac     */
+    new_header->length = pkthdr->len;            /* Packet size */
+
+    /* Discard packets with our mac as source */
+    if (memcmp(new_header->smac, smac, 6) != 0)
+    {
+        unsigned char type[2];
+        memcpy(type, packet + 20, 2);
+
+        /* Check if its ARP request or reply, and add it to list */
+        if (memcmp(type, ARP_REPLY, 2) == 0)
+        {
+            struct arp_rep_l *new_arprep_l;
+            new_arprep_l = (struct arp_rep_l *) malloc (sizeof(struct arp_rep_l));
+
+            /* Populate basic arp info */
+            new_arprep_l->header = new_header;  /* Add header */
+            new_arprep_l->type = 2;             /* Arp Type */
+
+            process_arp_header( (void *)new_arprep_l, 2, packet);
+            arprep_add(new_arprep_l);
+        }
+        else if (memcmp(type, ARP_REQUEST, 2) == 0)
+        {
+            struct arp_req_l *new_arpreq_l;
+            new_arpreq_l = (struct arp_req_l *) malloc (sizeof(struct arp_req_l));
+
+            /* Populate basic arp info */
+            new_arpreq_l->header = new_header;  /* Add header */
+            new_arpreq_l->type = 1;             /* Arp Type */
+
+            process_arp_header( (void *)new_arpreq_l, 1, packet);
+            arpreq_add(new_arpreq_l);
+        }
+    }
+}
+
+/* Handle arp packet header */
+void process_arp_header(void *arp, u_int8_t type, const u_char* packet)
+{
+    /* Handle arp argument depending on type */
+    #if (type == NARP_REPLY)
+        #define arp_current arp_rep_l
+    #else
+        #define arp_current arp_req_l
+    #endif
+
+
+    struct arp_current *new_arp;
+    new_arp = (struct arp_current *)arp;
+
+    /* Populate basic common arp info */
+    new_arp->count = 1;
+    new_arp->next = NULL;
+
+    /* Allocate memory for ip addrs */
+    new_arp->sip = (char *) malloc (sizeof(char) * 16);
+    new_arp->dip = (char *) malloc (sizeof(char) * 16);
+
+    /* Source IP */
+    sprintf(new_arp->sip, "%d.%d.%d.%d",
+            packet[28], packet[29], packet[30], packet[31]);
+
+    /* Destination IP */
+    sprintf(new_arp->dip, "%d.%d.%d.%d",
+            packet[38], packet[39], packet[40], packet[41]);
 }
 
 /* Init device for libnet and get mac addr */

@@ -8,6 +8,7 @@ SUBDIRS = src doc
 netdiscoverdocdir = ${prefix}/doc/netdiscover
 netdiscoverdoc_DATA = \
 	README\
+	README.rpm\
 	COPYING\
 	AUTHORS\
 	ChangeLog\
@@ -15,7 +16,7 @@ netdiscoverdoc_DATA = \
 	NEWS\
 	TODO
 
-EXTRA_DIST = $(netdiscoverdoc_DATA)
+EXTRA_DIST = $(netdiscoverdoc_DATA) rpm/mandriva.spec rpm/redhat.spec
 
 
 

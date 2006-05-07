@@ -1,4 +1,4 @@
-# Anjuta Version 1.2.4 
+# Anjuta Version 1.2.4a 
 Compatibility Level: 1 
 
 <PROJECT_DESCRIPTION_START>
@@ -41,7 +41,7 @@ esac<CONFIG_ADDITIONAL_END>
 
 props.file.type=project
 
-anjuta.version=1.2.4
+anjuta.version=1.2.4a
 anjuta.compatibility.level=1
 
 project.name=netdiscover
@@ -58,7 +58,7 @@ project.excluded.modules=intl
 project.config.extra.modules.before=
 project.config.extra.modules.after=
 project.config.blocked=0
-project.config.disable.overwriting=1 0 1 0 0 0 0 1 0 
+project.config.disable.overwriting=1 1 1 0 0 0 0 1 0 
 
 project.menu.entry=netdiscover Version 0.1
 project.menu.group=Applications
@@ -105,9 +105,11 @@ module.pixmap.name=pixmaps
 module.pixmap.type=
 module.pixmap.files=
 
-module.data.name=data
+module.data.name=rpm
 module.data.type=
-module.data.files=
+module.data.files=\
+	mandriva.spec\
+	redhat.spec
 
 module.help.name=help
 module.help.type=

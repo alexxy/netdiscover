@@ -128,7 +128,7 @@ int main(int argc, char **argv)
    sprintf(current_network, "Starting.");
 
    /* Fetch parameters */
-   while ((c = getopt(argc, argv, "i:s:r:l:n:c:pSfdPLh")) != EOF)
+   while ((c = getopt(argc, argv, "i:s:r:l:n:c:P:pSfdLh")) != EOF)
    {
       switch (c)
       {

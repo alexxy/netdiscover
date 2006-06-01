@@ -47,8 +47,10 @@
 /* Shity globals */
 struct arp_rep_l *first_arprep, *last_arprep, *last_arprep_printed;
 struct arp_req_l *first_arpreq, *last_arpreq;
+struct host_l *first_host, *last_host;
 struct arp_rep_c *arprep_count;
 struct arp_req_c *arpreq_count;
+struct host_c *host_count;
 
 struct termios stored_settings, working_settings;
 struct winsize win_sz;
@@ -65,41 +67,51 @@ char blank[] = " ";
 /* Inits lists with null pointers, sighandlers, etc */
 void init_lists()
 {
-	scroll = 0;
-	smode = 0;
-	
-	/* Mutex for list access */
-	listm =(pthread_mutex_t *)malloc(sizeof (pthread_mutex_t));
-	pthread_mutex_init(listm, NULL);
-	
-   /* ARP reply packets lists */
-   first_arprep = (struct arp_rep_l *) NULL;
-   last_arprep = (struct arp_rep_l *) NULL;
-   last_arprep_printed = (struct arp_rep_l *) NULL;
+    scroll = 0;
+    smode = 0;
 
-   /* ARP request packets lists */
-   first_arpreq = (struct arp_req_l *) NULL;
-   last_arpreq = (struct arp_req_l *) NULL;
-	
-	/* ARP reply counters */
-	arprep_count = (struct arp_rep_c *) malloc (sizeof(struct arp_rep_c));
-	arprep_count->count = 0;
-	arprep_count->hosts = 0;
-	arprep_count->length = 0;
+    /* Mutex for list access */
+    listm =(pthread_mutex_t *)malloc(sizeof (pthread_mutex_t));
+    pthread_mutex_init(listm, NULL);
+
+    /* ARP reply packets lists */
+    first_arprep = (struct arp_rep_l *) NULL;
+    last_arprep = (struct arp_rep_l *) NULL;
+    last_arprep_printed = (struct arp_rep_l *) NULL;
+
+    /* ARP request packets lists */
+    first_arpreq = (struct arp_req_l *) NULL;
+    last_arpreq = (struct arp_req_l *) NULL;
+
+    /* Unique hosts list */
+    first_host = (struct host_l *) NULL;
+    last_host = (struct host_l *) NULL;
+
+    /* ARP reply counters */
+    arprep_count = (struct arp_rep_c *) malloc (sizeof(struct arp_rep_c));
+    arprep_count->count = 0;
+    arprep_count->hosts = 0;
+    arprep_count->length = 0;
 
     /* ARP request counters */
     arpreq_count = (struct arp_req_c *) malloc (sizeof(struct arp_req_c));
     arpreq_count->count = 0;
     arpreq_count->hosts = 0;
     arpreq_count->length = 0;
-	
-	/* Set signal handlers */
-	signal( SIGINT,   sighandler );
-   signal( SIGKILL,   sighandler );
-   signal( SIGTERM,   sighandler );
-   signal( SIGHUP,   sighandler );
-   signal( SIGABRT,   sighandler );
-   signal( SIGCONT,   sighandler );
+
+    /* ARP request counters */
+    host_count = (struct host_c *) malloc (sizeof(struct host_c));
+    host_count->count = 0;
+    host_count->hosts = 0;
+    host_count->length = 0;
+
+    /* Set signal handlers */
+    signal( SIGINT,   sighandler );
+    signal( SIGKILL,   sighandler );
+    signal( SIGTERM,   sighandler );
+    signal( SIGHUP,   sighandler );
+    signal( SIGABRT,   sighandler );
+    signal( SIGCONT,   sighandler );
 
    /* Set console properties to read keys */
    tcgetattr(0,&stored_settings);
@@ -160,28 +172,39 @@ void read_key()
     /* Key functions */
     if((ch == 107) && (scroll > 0))
       scroll -= 1;      // UP
-    else if ((ch == 106)&&(scroll < (arprep_count->hosts - 1)))
+    else if (ch == 106)
        scroll += 1;     // DOWN
     else if (ch == 114)
     {
-       smode = 1;       // PRINT REQUEST
+       smode = SMODE_REQUEST;       // PRINT REQUEST
        scroll = 0;
     }
     else if (ch == 97)
     {
-       smode = 0;       // PRINT ALL
+       smode = SMODE_REPLY;       // PRINT REPLIES
        scroll = 0;
+    }
+    else if (ch == 117)
+    {
+        smode = SMODE_HOST;       // PRINT HOSTS
+        scroll = 0;
     }
     else if ((ch == 113) && (smode != 2) )
        sighandler(0);   // QUIT
     else if ((ch == 113) && (smode == 2) )
        smode = oldmode; // close screen
-    else if (ch == 104)
+    else if ((ch == 104) && (smode != 2))
     {
        scroll = 0;
        oldmode = smode; // PRINT HELP
-       smode = 2;
+       smode = SMODE_HELP;
     }
+    /* Debug code
+    else
+    {
+        printf("\n\nYou pressed %i\n\n", ch);
+        sleep(2);
+    } */
 
     print_screen();
 }
@@ -212,6 +235,7 @@ void fill_screen()
    int x, j;
    struct arp_rep_l *arprep_l;
    struct arp_req_l *arpreq_l;
+   struct host_l *thost_l;
 
    x = 0;
 
@@ -245,27 +269,27 @@ void fill_screen()
    print_header();
 
    /* Print each found station trough arp reply */
-   if (smode == 0)
+   if (smode == SMODE_REPLY)
    {
       arprep_l = first_arprep;
-      
+
       while(arprep_l != NULL)
       {
          if (x >= scroll)
          {
             print_arp_reply_line(arprep_l);
          }
-         
+
          arprep_l = arprep_l->next;
          x += 1;
-      
+
          /* Check if end of screen was reached */
          if (x >= ( (win_sz.ws_row + scroll) - 7))
             break;
       }
 
    } /* Print only arp request */
-   else if (smode == 1)
+   else if (smode == SMODE_REQUEST)
    {
       arpreq_l = first_arpreq;
 
@@ -283,11 +307,30 @@ void fill_screen()
          if (x >= ( (win_sz.ws_row + scroll) - 7))
             break;
       }
-   }
-   else if(smode == 2)
+   } /* Print only unique hosts */
+   else if (smode == SMODE_HOST)
+   {
+       thost_l = first_host;
+
+       while(thost_l != NULL)
+       {
+           if (x >= scroll)
+           {
+               print_unique_host_line(thost_l);
+           }
+
+           thost_l = thost_l->next;
+           x += 1;
+
+           /* Check if end of screen was reached */
+           if (x >= ( (win_sz.ws_row + scroll) - 7))
+               break;
+       }
+   } /* Print help window */
+   else if(smode == SMODE_HELP)
    {
       int i;
-       
+
        printf("\n"
                "\t  ______________________________________________  \n"
                "\t |                                              | \n"
@@ -298,13 +341,14 @@ void fill_screen()
                "\t |     k: scroll up   (or up arrow)             | \n"
                "\t |     a: show arp replys list                  | \n"
                "\t |     r: show arp requests list                | \n"
+               "\t |     r: show unique hosts detected            | \n"
                "\t |     q: exit this screen or end               | \n"
                "\t |                                              | \n"
                "\t  ----------------------------------------------  \n");
-   
-       
-       
-       for (i=20; i<win_sz.ws_row; i++)
+
+
+
+       for (i=21; i<win_sz.ws_row; i++)
            printf("\n");
    }
 
@@ -315,11 +359,15 @@ void fill_screen()
 void print_header()
 {
 	printf(" _____________________________________________________________________________\n");
-	if (smode == 0 || (oldmode == 0 && smode == 2))
+	
+    if (smode == SMODE_REPLY || (oldmode == SMODE_REPLY && smode == SMODE_HELP))
 		printf("   IP            At MAC Address      Count  Len   MAC Vendor                   \n");
-	else if (smode == 1 || (oldmode == 1 && smode == 2))
+	else if (smode == SMODE_REQUEST || (oldmode == SMODE_REQUEST && smode == SMODE_HELP))
 		printf("   IP            At MAC Address      Requests IP     Count                     \n");
-	printf(" ----------------------------------------------------------------------------- \n");
+    else if (smode == SMODE_HOST || (oldmode == SMODE_HOST && smode == SMODE_HELP))
+        printf("   IP            At MAC Address      Count  Len   MAC Vendor                   \n");
+	
+    printf(" ----------------------------------------------------------------------------- \n");
 }
 
 void print_parsable_screen()
@@ -328,23 +376,28 @@ void print_parsable_screen()
 	
 	/* Header is printed in main.c in parsable_screen_refresh() */
 
-	/* We initialize our read pointer if there are elements in the list */	
-	if (last_arprep_printed == NULL && first_arprep != NULL)
-	{
-		last_arprep_printed = first_arprep;
-		print_parsable_line(last_arprep_printed);
-	}
-	
-	/* We print what we did not read yet in the list */
-	if (last_arprep_printed != NULL)
-	{
-		while (last_arprep_printed->next != NULL)
-		{
-			last_arprep_printed = last_arprep_printed->next;
-			print_parsable_line(last_arprep_printed);
-		}
-	}
-	
+    switch (smode)
+    {
+        case SMODE_REPLY:
+            /* We initialize our read pointer if there are elements in the list */	
+            if (last_arprep_printed == NULL && first_arprep != NULL)
+            {
+                last_arprep_printed = first_arprep;
+                print_parsable_line(last_arprep_printed);
+            }
+
+            /* We print what we did not read yet in the list */
+            if (last_arprep_printed != NULL)
+            {
+                while (last_arprep_printed->next != NULL)
+                {
+                    last_arprep_printed = last_arprep_printed->next;
+                    print_parsable_line(last_arprep_printed);
+                }
+            }
+        break;
+    }
+
 	pthread_mutex_unlock(listm);
 }
 
@@ -439,6 +492,43 @@ void print_arp_request_line(struct arp_req_l *arpreq_l)
 	printf("%s\n", line);
 }
 
+
+/* Print an ARP request line, with IP, MAC, etc */
+void print_unique_host_line(struct host_l *host_data)
+{
+	int j;
+
+	sprintf(line, " ");
+	sprintf(tline, " ");
+	
+	/* Get source IP */
+	sprintf(tline, "%s ", host_data->sip);
+	strcat(line, tline);
+	
+	/* Fill with spaces */
+	for (j=strlen(line); j<17; j++)
+		strcat(line, blank);
+	
+	/* Get source MAC */
+	sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x    ",
+		host_data->header->smac[0], host_data->header->smac[1],
+		host_data->header->smac[2], host_data->header->smac[3],
+		host_data->header->smac[4], host_data->header->smac[5]);
+	strcat(line, tline);
+	
+    /* Count, Length & Vendor */
+    sprintf(tline, "%02d    %03d   %s", host_data->count, 
+            host_data->header->length, host_data->vendor );
+    strcat(line, tline);
+
+	/* Fill again with spaces */
+	for (j=strlen(line); j<win_sz.ws_col - 1; j++)
+		strcat(line, blank);
+	
+	printf("%s\n", line);
+}
+
+
 void parsable_output_scan_completed()
 {
 	char plural = '\0';
@@ -468,6 +558,60 @@ void parsable_output_scan_completed()
 
 }
 
+/* Adds unique host to the list */
+void host_add(void *data)
+{
+	int i = 0;
+    struct host_l *host_data;
+
+    /* We must dupe the structure to avoid interferences *
+    * with the other pointer lists */
+    host_data = (struct host_l *) malloc (sizeof(struct host_l));
+    memcpy(host_data, (struct host_l *)data, sizeof(struct host_l));
+
+	if ( first_host == NULL )
+	{
+        host_count->hosts += 1;
+        host_count->count += 1;
+        host_count->length += host_data->header->length;
+        host_data->vendor = search_vendor(host_data->header->smac);
+
+        first_host = host_data;
+        last_host = host_data;
+    }
+    else
+    {
+        struct host_l *thost_l;
+        thost_l = first_host;
+
+        /* Check for dupe hosts */
+        while ( thost_l != NULL && i != 1 )
+        {
+            if ( ( strcmp(thost_l->sip, host_data->sip) == 0 ) &&
+                   ( memcmp(thost_l->header->smac, host_data->header->smac, 6) == 0 ) )
+            {
+                thost_l->count += 1;
+                thost_l->header->length += host_data->header->length;
+
+                i = 1;
+            }
+            thost_l = thost_l->next;
+        }
+
+        /* Add it if isnt dupe */
+        if ( i != 1 )
+        {
+            host_count->hosts += 1;
+            host_data->vendor = search_vendor(host_data->header->smac);
+
+            last_host->next = host_data;
+            last_host = host_data;
+        }
+
+        host_count->count += 1;
+        host_count->length += host_data->header->length;
+    }
+}
 
 /* Adds ARP reply packet data to the list */
 void arprep_add(struct arp_rep_l *new)
@@ -475,6 +619,7 @@ void arprep_add(struct arp_rep_l *new)
 	int i = 0;
 	
 	pthread_mutex_lock(listm);
+    host_add((void *)new);
 	
 	if ( first_arprep == NULL )
 	{
@@ -530,6 +675,7 @@ void arpreq_add(struct arp_req_l *new)
 	int i = 0;
 	
 	pthread_mutex_lock(listm);
+    host_add((void *)new);
 	
 	if ( first_arpreq == NULL )
 	{
@@ -578,3 +724,4 @@ void arpreq_add(struct arp_req_l *new)
 	
 	pthread_mutex_unlock(listm);
 }
+

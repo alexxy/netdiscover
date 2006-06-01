@@ -1,4 +1,5 @@
 Netdiscover 0.3-beta7 (Currently working on it)
+   * Hang when "h" is pressed twice fixed
    * Madriva and RedHat rpm .spec files added, thanks to Francis Giraldeau
      and Guillaume Pratte for the contribution
    * Buffer overflow on search_vendor fixed, thanks to Guillaume Pratte

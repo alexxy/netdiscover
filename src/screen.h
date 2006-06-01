@@ -26,8 +26,15 @@
  */
 
 
+/* ARP types definitions */
 #define NARP_REQUEST 1
 #define NARP_REPLY 2
+
+/* Screen modes definitions */
+#define SMODE_REPLY 0
+#define SMODE_REQUEST 1
+#define SMODE_HELP 2
+#define SMODE_HOST 3
 
 /* Ohh no, more globals */
 char *current_network;
@@ -40,8 +47,15 @@ struct arp_rep_c {
 	unsigned int length;
 };
 
-/* Structs for arp request counters */
+/* Structs for arp request counters  */
 struct arp_req_c {
+    unsigned int count;
+    unsigned int hosts;
+    unsigned int length;
+};
+
+/* Structs for unique hosts counters  */
+struct host_c {
     unsigned int count;
     unsigned int hosts;
     unsigned int length;
@@ -66,7 +80,6 @@ struct arp_req_l {
 	struct arp_req_l *next;
 };
 
-
 /* holds arp replys packet data */
 struct arp_rep_l {
 	struct p_header *header;
@@ -78,6 +91,16 @@ struct arp_rep_l {
 	struct arp_rep_l *next;
 };
 
+/* holds unique hosts list */
+struct host_l {
+	struct p_header *header;
+	char *sip;
+	char *dip;
+	char *vendor;
+	short type;
+	unsigned int count;
+	struct host_l *next;
+};
 
 
 /* Screen functions */
@@ -88,11 +111,13 @@ void print_parsable_screen();
 void print_parsable_line(struct arp_rep_l *);
 void print_arp_reply_line(struct arp_rep_l *);
 void print_arp_request_line(struct arp_req_l *);
+void print_unique_host_line(struct host_l *);
 void parsable_output_scan_completed();
 void read_key();
 void sighandler(int);
 
-/* Lists functions */
+/* Functions to handle pointer lists */
 void init_lists();
 void arprep_add(struct arp_rep_l *);
 void arpreq_add(struct arp_req_l *);
+void host_add(void *);

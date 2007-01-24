@@ -1,4 +1,9 @@
 Netdiscover 0.3-beta7 (Currently working on it)
+   * Improved network addresses sanity checks, thanks to Alex.
+   * Netmask will be setup to /24 by default if its omited, thanks to Alex.
+   * Added .2 .200 hosts to be scanned on fast mode, thanks again to Alex.
+   * Some unnecessary mallocs where removed to prevent memory leaks,
+     thanks to Alex (SuD) for the patch.
    * Hang when "h" is pressed twice fixed
    * Madriva and RedHat rpm .spec files added, thanks to Francis Giraldeau
      and Guillaume Pratte for the contribution
@@ -9,8 +14,8 @@ Netdiscover 0.3-beta7 (Currently working on it)
    * Manpage updated with new features and some examples
    * Added support to read user config files for ranges and fasmode lists
    * MAC vendors list updated
-   * Hang on Ctrl+C fixed, thanks to SuD for the patch
-   * Improved argument handling, thanks to SuD for reporting
+   * Hang on Ctrl+C fixed, thanks to Alex (SuD) for the patch
+   * Improved argument handling, thanks to Alex (SuD) for reporting
    
 Netdiscover 0.3-beta6
    * Changed installation path to sbin

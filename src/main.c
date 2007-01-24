@@ -32,6 +32,8 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <signal.h>
 #include <string.h>
 #include "ifaces.h"
 #include "screen.h"
@@ -54,7 +56,7 @@ void usage();
 /* Last octect of ips scaned in fast mode */
 /* Add new addr if needed here */
 char **fast_ips;
-char *dfast_ips[] = { "1", "100", "254", NULL};
+char *dfast_ips[] = { "1", "2", "100", "200", "254", NULL};
 
 /* Common local networks to scan */
 /* Add new networks if needed here */
@@ -184,17 +186,22 @@ int main(int argc, char **argv)
             continue_listening = 1;
             break;
 
+	 default:
+	    printf("\n"); /* continues... */
+
          case 'h':   /* Show help */
             usage(argv[0]);
             exit(1);
             break;
-
-         default:    /* Show help */
-            usage(argv[0]);
-            exit(1);
-         break;
       }
    }
+
+   if (optind < argc) {
+      printf("Invalid extra argument: %s\n\n", argv[optind]);
+      usage(argv[0]);
+      exit(1);
+   }
+
 
    /* Check for uid 0 */
    if ( getuid() && geteuid() )
@@ -343,10 +350,7 @@ void *inject_arp(void *arg)
 void scan_net(char *disp, char *sip)
 {
    int x, j;
-   char *test, *fromip;
-
-   test = (char *) malloc ((sizeof(char)) * 16);
-   fromip = (char *) malloc ((sizeof(char)) * 16);
+   char test[16], fromip[16];
 
    sprintf(fromip,"%s.%i", sip, node);
 
@@ -414,11 +418,8 @@ void scan_range(char *disp, char *sip)
 {
    int i, k, e;
    const char delimiters[] = ".,/";
-   char *a, *b, *c, *d, *t;
-   char *tnet, *net;
-
-   net = (char *) malloc ((sizeof(char)) * 16);
-   tnet = (char *) malloc ((sizeof(char)) * 19);
+   char *a, *b, *c, *d, *aux;
+   char tnet[19], net[16];
 
    /* Split range data*/
    sprintf(tnet, "%s", sip);
@@ -426,15 +427,26 @@ void scan_range(char *disp, char *sip)
    b = strtok (NULL, delimiters); /* 2nd ip octect */
    c = strtok (NULL, delimiters); /* 3rd ip octect */
    d = strtok (NULL, delimiters); /* 4th ip octect */
-   t = strtok(NULL, delimiters); /* Subnet mask */
+
+   if ((aux = strtok (NULL, delimiters)) != NULL) /* Subnet mask */
+      e = atoi(aux); /* Subnet mask */
+   else
+      e = 24; /* Default subnet mask */
 
    /* Check all parts are ok */
-   if ((a == NULL) || (b == NULL) || (c == NULL) || (d == NULL) || (t == NULL))
+   if ((a == NULL) || (b == NULL) || (c == NULL) || (d == NULL))
    {
-      printf("The given range: %s isnt well formated\n", sip);
-      sighandler(1);
+   	e = -1;
+   } else {
+        k = strtol(a, &aux, 10);
+        if (k<0 || k>255 || *aux != '\0') e = -1;
+        k = strtol(b, &aux, 10);
+        if (k<0 || k>255 || *aux != '\0') e = -1;
+        k = strtol(c, &aux, 10);
+        if (k<0 || k>255 || *aux != '\0') e = -1;
+        k = strtol(d, &aux, 10);
+        if (k<0 || k>255 || *aux != '\0') e = -1;
    }
-   e = atoi(t);
 
    /* Scan class C network */
    if ( e == 24)
@@ -468,9 +480,11 @@ void scan_range(char *disp, char *sip)
    }
    else
    {
-      system("clear");
-      printf("Network range must be 0.0.0.0/8 , /16 or /24\n");
-      sighandler(1);
+      // system("clear");
+      printf("\nERROR: Network range must be 0.0.0.0/8 , /16 or /24\n\n");
+      sighandler(SIGTERM);
+      sleep(5);
+      exit(1);
    }
 
 }

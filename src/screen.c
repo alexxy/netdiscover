@@ -56,7 +56,8 @@ struct termios stored_settings, working_settings;
 struct winsize win_sz;
 
 pthread_mutex_t *listm;
-extern pthread_t keys;
+extern pthread_t screen, keys, sniffer, injection;
+
 
 int scroll;
 int smode, oldmode;

@@ -130,7 +130,7 @@ int main(int argc, char **argv)
    sprintf(current_network, "Starting.");
 
    /* Fetch parameters */
-   while ((c = getopt(argc, argv, "i:s:r:l:n:c:P:pSfdLh")) != EOF)
+   while ((c = getopt(argc, argv, "i:s:r:l:n:c:pSfdPLh")) != EOF)
    {
       switch (c)
       {
@@ -183,6 +183,7 @@ int main(int argc, char **argv)
             break;
 
          case 'L':   /* Continue to listen in parsable output mode after active scan is completed */
+            parsable_output = 1;
             continue_listening = 1;
             break;
 

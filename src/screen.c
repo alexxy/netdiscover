@@ -342,7 +342,7 @@ void fill_screen()
                "\t |     k: scroll up   (or up arrow)             | \n"
                "\t |     a: show arp replys list                  | \n"
                "\t |     r: show arp requests list                | \n"
-               "\t |     r: show unique hosts detected            | \n"
+               "\t |     u: show unique hosts detected            | \n"
                "\t |     q: exit this screen or end               | \n"
                "\t |                                              | \n"
                "\t  ----------------------------------------------  \n");

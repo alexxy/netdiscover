@@ -31,7 +31,6 @@
   *  here http://www.cr0.net:8040/code/network/
   */
  
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

@@ -39,13 +39,6 @@
 #include "screen.h"
 #include "fhandle.h"
 
-/* Threads data structure */
-struct t_data {
-   char *disp;
-   char *sip;
-   char *filter;
-   int autos;
-};
 
 
 void *inject_arp(void *arg);

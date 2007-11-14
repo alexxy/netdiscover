@@ -59,13 +59,6 @@
 #endif
 
 
-/* Threads data structure */
-struct t_data {
-	char *disp;
-	char *sip;
-	char *filter;
-	int autos;
-};
 
 
 /* Shitty globals */

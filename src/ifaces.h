@@ -50,7 +50,15 @@ extern "C"
 	
 	// Shitty globals
 	char *ourmac, errbuf[PCAP_ERRBUF_SIZE];
-	
+
+	/* Threads data structure */
+	struct t_data {
+		char *disp;
+		char *sip;
+		char *filter;
+		int autos;
+	};
+
 	// Sniffer/Packet processing Functions
 	void *start_sniffer(void *);
     void process_arp_header(void *, u_int8_t, const u_char *);

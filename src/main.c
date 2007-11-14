@@ -43,6 +43,7 @@
 struct t_data {
    char *disp;
    char *sip;
+   char *filter;
    int autos;
 };
 
@@ -117,6 +118,7 @@ int main(int argc, char **argv)
    /* Some default values */
    datos.sip = NULL;
    datos.disp = NULL;
+   datos.filter = NULL;
    datos.autos = 0;
    sleept = 99;
    node = 67;
@@ -130,7 +132,7 @@ int main(int argc, char **argv)
    sprintf(current_network, "Starting.");
 
    /* Fetch parameters */
-   while ((c = getopt(argc, argv, "i:s:r:l:n:c:pSfdPLh")) != EOF)
+   while ((c = getopt(argc, argv, "i:s:r:l:n:c:pSfdPLhF:")) != EOF)
    {
       switch (c)
       {
@@ -173,6 +175,11 @@ int main(int argc, char **argv)
          case  'f':  /* Enable fast mode */
             fastmode = 1;
             break;
+
+	 case 'F':  /* Edit pcap filter */
+	    datos.filter = (char *) malloc (sizeof(char) * strlen(optarg));
+	    sprintf(datos.filter, "%s", optarg);
+	    break;
 
          case 'd':   /* Ignore home config files */
             ignoreconf = 1;
@@ -281,6 +288,8 @@ int main(int argc, char **argv)
       pthread_join(sniffer,NULL);
    }
 
+   if(datos.filter != NULL)
+	   free(datos.filter);
 
    return 0;
 }
@@ -502,6 +511,7 @@ void usage(char *comando)
       "  -r range: scan a given range instead of auto scan. 192.168.6.0/24,/16,/8\n"
       "  -l file: scan the list of ranges contained into the given file\n"
       "  -p passive mode: do not send anything, only sniff\n"
+      "  -F filter: Customize pcap filter expression (default: \"arp\")\n"
       "  -s time: time to sleep between each arp request (miliseconds)\n"
       "  -n node: last ip octet used for scanning (from 2 to 253)\n"
       "  -c count: number of times to send each arp reques (for nets with packet loss)\n"

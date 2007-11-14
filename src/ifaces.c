@@ -63,6 +63,7 @@
 struct t_data {
 	char *disp;
 	char *sip;
+	char *filter;
 	int autos;
 };
 
@@ -79,6 +80,7 @@ void *start_sniffer(void *args)
 	pcap_t *descr;
 	struct bpf_program fp;	
 	struct t_data *datos; 
+	char *filter;
 
 	datos = (struct t_data *)args;
 		
@@ -90,8 +92,10 @@ void *start_sniffer(void *args)
 		exit(1);
 	}
 	
-	/* Set pcap filter for arp only */
-	pcap_compile(descr, &fp, "arp", 0, 0);
+	/* Set pcap filter */
+	filter = (datos->filter == NULL) ? "arp" : datos->filter;
+	pcap_compile(descr, &fp, filter, 0, 0);
+
 	pcap_setfilter(descr, &fp);
 	
 	/* Start loop for packet capture */

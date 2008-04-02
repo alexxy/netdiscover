@@ -39,6 +39,8 @@
 #include "screen.h"
 #include "fhandle.h"
 
+#define RPATH  "%s/.netdiscover/ranges"
+#define FPATH  "%s/.netdiscover/fastips"
 
 
 void *inject_arp(void *arg);
@@ -46,6 +48,7 @@ void *screen_refresh(void *arg);
 void *parsable_screen_refresh(void *arg);
 void scan_range(char *disp, char *sip);
 void usage();
+
 
 /* Last octect of ips scaned in fast mode */
 /* Add new addr if needed here */
@@ -100,11 +103,10 @@ int main(int argc, char **argv)
    int esniff = 0;
    int erange = 0;
    int elist = 0;
-   char plist[50];
+   char *plist;
 
-   /* Config file handling */
-   char fpath[50], rpath[50];
-   char *home;
+   /* Config file handling vars */
+   char *home, *path;
 
    struct t_data datos;
 
@@ -125,12 +127,12 @@ int main(int argc, char **argv)
    sprintf(current_network, "Starting.");
 
    /* Fetch parameters */
-   while ((c = getopt(argc, argv, "i:s:r:l:n:c:pSfdPLhF:")) != EOF)
+   while ((c = getopt(argc, argv, "i:s:r:l:n:c:F:pSfdPLh")) != EOF)
    {
       switch (c)
       {
          case 'i':   /* Set the interface */
-            datos.disp = (char *) malloc (sizeof(char) * strlen(optarg));
+            datos.disp = (char *) malloc (sizeof(char) * (strlen(optarg) + 1));
             sprintf(datos.disp, "%s", optarg);
             break;
 
@@ -155,12 +157,13 @@ int main(int argc, char **argv)
             break;
 
          case  'r':  /* Set the range to scan */
-            datos.sip = (char *) malloc (sizeof(char) * strlen(optarg));
+            datos.sip = (char *) malloc (sizeof(char) * strlen(optarg) + 1);
             sprintf(datos.sip, "%s", optarg);
             erange = 1;
             break;
 
          case 'l':   /* Scan ranges on the given file */
+            plist = (char *) malloc (sizeof(char) * (strlen(optarg) + 1));
             sprintf(plist, "%s", optarg);
             elist = 1;
             break;
@@ -169,10 +172,10 @@ int main(int argc, char **argv)
             fastmode = 1;
             break;
 
-	 case 'F':  /* Edit pcap filter */
-	    datos.filter = (char *) malloc (sizeof(char) * strlen(optarg));
-	    sprintf(datos.filter, "%s", optarg);
-	    break;
+         case 'F':  /* Edit pcap filter */
+            datos.filter = (char *) malloc (sizeof(char) * (strlen(optarg) + 1));
+            sprintf(datos.filter, "%s", optarg);
+            break;
 
          case 'd':   /* Ignore home config files */
             ignoreconf = 1;
@@ -225,20 +228,26 @@ int main(int argc, char **argv)
 
    /* Load user config files or set defaults */
    home = getenv("HOME");
-   sprintf(rpath, "%s/.netdiscover/ranges", home);
-   sprintf(fpath, "%s/.netdiscover/fastips", home);
 
    /* Read user configured ranges if arent disabled */
-   if (((common_net = fread_list(rpath)) == NULL) || (ignoreconf == 1))
+   path = (char *) malloc (sizeof(char) * (strlen(home) + strlen(RPATH) + 1));
+   sprintf(path, RPATH, home);
+
+   if (((common_net = fread_list(path)) == NULL) || (ignoreconf == 1))
       common_net = dcommon_net;
+   free(path);
+
    /* Read user configured ips for fast mode if arent disabled */
-   if(((fast_ips = fread_list(fpath)) == NULL) || (ignoreconf == 1))
+   path = (char *) malloc (sizeof(char) * (strlen(home) + strlen(FPATH) + 1));
+   sprintf(path, FPATH, home);
+
+   if(((fast_ips = fread_list(path)) == NULL) || (ignoreconf == 1))
       fast_ips = dfast_ips;
+   free(path);
+
    /* Read range list given by user if specified */
-   if (elist == 1)
-   {
-      if ((common_net = fread_list(plist)) == NULL)
-      {
+   if (elist == 1) {
+      if ((common_net = fread_list(plist)) == NULL) {
          printf("File \"%s\" containing ranges, cannot be read.\n", plist);
          exit(1);
       }
@@ -250,17 +259,13 @@ int main(int argc, char **argv)
 
    /* If no mode was selected, enable auto scan */
    if ((erange != 1) && (esniff != 1))
-   {
       datos.autos = 1;
-   }
 
    /* Start the execution */
-   if (parsable_output)
-   {
+   if (parsable_output) {
       pthread_create(&screen, NULL, parsable_screen_refresh, (void *)NULL);
-   }
-   else
-   {
+
+   } else {
       system("clear");
       pthread_create(&screen, NULL, screen_refresh, (void *)NULL);
       pthread_create(&keys, NULL, keys_thread, (void *)NULL);
@@ -268,13 +273,11 @@ int main(int argc, char **argv)
 
    pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos);
 
-   if (esniff == 1)
-   {
+   if (esniff == 1) {
       current_network = "(passive)";
       pthread_join(sniffer,NULL);
-   }
-   else
-   {
+
+   } else {
       if (pthread_create(&injection, NULL, inject_arp, (void *)&datos))
          perror("Could not create injection thread");
 
@@ -425,7 +428,7 @@ void scan_range(char *disp, char *sip)
    char tnet[19], net[16];
 
    /* Split range data*/
-   sprintf(tnet, "%s", sip);
+   snprintf(tnet, sizeof(tnet), "%s", sip);
    a = strtok (tnet, delimiters); /* 1st ip octect */
    b = strtok (NULL, delimiters); /* 2nd ip octect */
    c = strtok (NULL, delimiters); /* 3rd ip octect */

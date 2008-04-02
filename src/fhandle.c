@@ -2,7 +2,7 @@
  *            fhandle.c
  *
  *  Thu Dec 29 07:04:39 2005
- *  Copyright  2005  Jaime Peñalba Estebanez
+ *  Copyright  2005  Jaime Pealba Estebanez
  *  jpenalbae@gmail.com
  ****************************************************************************/
 
@@ -34,28 +34,33 @@ char **fread_list(char *file)
    char **rlist;
    char line[100];
    int lcount = 0;
-   
+   int trim;
+
    if ((rl = fopen(file, "r")) == NULL)
-   {
       return NULL;
-   }
-   
+
    /* Count lines and rewind, kinda lamme... */
    while (fgets(line, sizeof(line), rl) != NULL)
       lcount++;
    rewind(rl);
-   
+
    rlist = (char **) malloc (sizeof(char *) * (lcount + 1));
    lcount = 0;
 
    /* Read lines again and fill double-linked list */
-   while (fgets(line, sizeof(line), rl) != NULL)
-   {
-      rlist[lcount] = (char *) malloc (sizeof(char) * strlen(line));
-      snprintf(rlist[lcount], strlen(line), line);
+   while (fgets(line, sizeof(line), rl) != NULL) {
+
+      trim = strlen(line) - 1;
+      while ( trim >= 0 && ( line[trim] == '\r' || line[trim] == '\n' )) {
+         line[trim] = '\0';
+         trim--;
+      }
+
+      rlist[lcount] = (char *) malloc (sizeof(char) * (strlen(line) + 1));
+      snprintf(rlist[lcount], strlen(line) + 1, "%s", line);
       lcount++;
    }
-   
+
    rlist[lcount] = NULL;
    fclose(rl);
    return rlist;

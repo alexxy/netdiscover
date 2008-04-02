@@ -70,31 +70,32 @@ struct p_header *temp_header;
 /* Start Sniffing on given iface */
 void *start_sniffer(void *args)
 {
-	pcap_t *descr;
-	struct bpf_program fp;	
-	struct t_data *datos; 
-	char *filter;
+   pcap_t *descr;
+   struct bpf_program fp;	
+   struct t_data *datos; 
+   char *filter;
 
-	datos = (struct t_data *)args;
-		
-	/* Open interface */
-	descr = pcap_open_live(datos->disp, BUFSIZ, 1, PCAP_TOUT, errbuf);
-	if(descr == NULL)
-	{
-		printf("pcap_open_live(): %s\n", errbuf);
-		exit(1);
-	}
-	
-	/* Set pcap filter */
-	filter = (datos->filter == NULL) ? "arp" : datos->filter;
-	pcap_compile(descr, &fp, filter, 0, 0);
+   datos = (struct t_data *)args;
 
-	pcap_setfilter(descr, &fp);
-	
-	/* Start loop for packet capture */
-	pcap_loop(descr, -1, (pcap_handler)process_packet, NULL);
+   /* Open interface */
+   descr = pcap_open_live(datos->disp, BUFSIZ, 1, PCAP_TOUT, errbuf);
+   if(descr == NULL) {
+      printf("pcap_open_live(): %s\n", errbuf);
+      sighandler(0); // QUIT
+   }
 
-	return NULL;
+   /* Set pcap filter */
+   filter = (datos->filter == NULL) ? "arp" : datos->filter;
+   if(pcap_compile(descr, &fp, filter, 0, 0) == -1) {
+      printf("pcap_compile(): %s\n", pcap_geterr(descr));
+      sighandler(0); // QUIT
+   }
+   pcap_setfilter(descr, &fp);
+
+   /* Start loop for packet capture */
+   pcap_loop(descr, -1, (pcap_handler)process_packet, NULL);
+
+   return NULL;
 }
 
 

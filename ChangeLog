@@ -1,4 +1,9 @@
 Netdiscover 0.3-beta7 (Currently working on it)
+   * Added custom pcap filter option. Patch by Gustavo Chain.
+   * Some code layout clean.
+   * Several fixes to avoid potential buffer overflows. Patch by Alex.
+   * fhandle.c fixed to be able to handle ms-dos line format. Patch by Alex.
+   * Some ranges not working through -r option fixed. Patch by Alex.
    * Improved network addresses sanity checks, thanks to Alex.
    * Netmask will be setup to /24 by default if its omited, thanks to Alex.
    * Added .2 .200 hosts to be scanned on fast mode, thanks again to Alex.

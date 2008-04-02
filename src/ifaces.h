@@ -24,10 +24,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #include <pcap.h>
- 
- 
+
+
 #ifndef _IFACES_H
 #define _IFACES_H
 
@@ -36,38 +36,38 @@ extern "C"
 {
 #endif
 
-	/* If system is Solaris */
-	#if defined(sun) && (defined(__svr4__) || defined(__SVR4))
-		#define PCAP_TOUT 20
-		typedef uint64_t u_int64_t;
-		typedef uint32_t u_int32_t;
-		typedef uint16_t u_int16_t;
-		typedef uint8_t  u_int8_t;
-	#else
-		#define PCAP_TOUT 0
-	#endif
-	
-	
-	// Shitty globals
-	char *ourmac, errbuf[PCAP_ERRBUF_SIZE];
+   /* If system is Solaris */
+   #if defined(sun) && (defined(__svr4__) || defined(__SVR4))
+      #define PCAP_TOUT 20
+      typedef uint64_t u_int64_t;
+      typedef uint32_t u_int32_t;
+      typedef uint16_t u_int16_t;
+      typedef uint8_t  u_int8_t;
+   #else
+      #define PCAP_TOUT 0
+   #endif
 
-	/* Threads data structure */
-	struct t_data {
-		char *disp;
-		char *sip;
-		char *filter;
-		int autos;
-	};
 
-	// Sniffer/Packet processing Functions
-	void *start_sniffer(void *);
-    void process_arp_header(void *, u_int8_t, const u_char *);
-	void process_packet(u_char *, struct pcap_pkthdr *, const u_char *);
-		
-	// ARP Generation & Injection
-	void lnet_init(char *);
-	void forge_arp(char *, char *, char *);
-	void lnet_destroy();
+   // Shitty globals
+   char *ourmac, errbuf[PCAP_ERRBUF_SIZE];
+
+   /* Threads data structure */
+   struct t_data {
+      char *disp;
+      char *sip;
+      char *filter;
+      int autos;
+   };
+
+   // Sniffer/Packet processing Functions
+   void *start_sniffer(void *);
+   void process_arp_header(void *, u_int8_t, const u_char *);
+   void process_packet(u_char *, struct pcap_pkthdr *, const u_char *);
+
+   // ARP Generation & Injection
+   void lnet_init(char *);
+   void forge_arp(char *, char *, char *);
+   void lnet_destroy();
 
 #ifdef __cplusplus
 }

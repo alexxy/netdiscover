@@ -4,7 +4,7 @@
 #            update-oui-database.sh
 #
 #  Thu Apr  3 21:18:44 CEST 2008
-#  Copyright  2008  Jaime Peñalba Estebanez
+#  Copyright  2008  Jaime Penalba Estebanez
 #  jpenalbae@gmail.com
 ##############################################################################
 
@@ -56,7 +56,7 @@ fi
 printf "/*
  * Organizationally Unique Identifier list - `date`
  * Automatically generated from http://standards.ieee.org/regauth/oui/oui.txt
- * For Netdiscover by Jaime Peñalba
+ * For Netdiscover by Jaime Penalba
  *
  */\n\n" > $TOUTFILE
 

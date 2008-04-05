@@ -25,8 +25,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <pcap.h>
-
 
 #ifndef _IFACES_H
 #define _IFACES_H
@@ -35,6 +33,9 @@
 extern "C"
 {
 #endif
+
+#include <pcap.h>
+#include "data_al.h"
 
    /* If system is Solaris */
    #if defined(sun) && (defined(__svr4__) || defined(__SVR4))
@@ -61,7 +62,7 @@ extern "C"
 
    // Sniffer/Packet processing Functions
    void *start_sniffer(void *);
-   void process_arp_header(void *, u_int8_t, const u_char *);
+   void process_arp_header(struct data_registry *, const u_char *);
    void process_packet(u_char *, struct pcap_pkthdr *, const u_char *);
 
    // ARP Generation & Injection

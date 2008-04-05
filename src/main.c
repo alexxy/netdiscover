@@ -111,6 +111,7 @@ int main(int argc, char **argv)
    struct t_data datos;
 
    /* Some default values */
+   plist = NULL;
    datos.sip = NULL;
    datos.disp = NULL;
    datos.filter = NULL;
@@ -307,7 +308,7 @@ void *parsable_screen_refresh(void *arg)
 	print_header();
 	while (1==1)
 	{
-		print_parsable_screen();
+		//print_parsable_screen();
         usleep(500000); /* half a second */
 	}
 }
@@ -345,7 +346,7 @@ void *inject_arp(void *arg)
 
    if(parsable_output)
    {
-      parsable_output_scan_completed(); /* defined in screen.c */
+      //parsable_output_scan_completed(); /* defined in screen.c */
    }
 
    return NULL;

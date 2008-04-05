@@ -9,7 +9,7 @@
 /*
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  the Free Software Foundation; either version 3 of the License, or
  *  (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
@@ -30,8 +30,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <libnet.h>
+
 #include "screen.h"
 #include "ifaces.h"
+#include "data_al.h"
 
 
 #define ARP_REPLY "\x00\x02"
@@ -103,76 +105,55 @@ void *start_sniffer(void *args)
 void process_packet(u_char *args, struct pcap_pkthdr* pkthdr,
                     const u_char* packet)
 {
-    struct p_header *new_header;
-    new_header = (struct p_header *) malloc (sizeof(struct p_header));
+   struct p_header *new_header;
+   new_header = (struct p_header *) malloc (sizeof(struct p_header));
+   
+   /* Get packet ethernet header data and fill struct */
+   memcpy(new_header->dmac, packet, 6);         /* dest mac    */
+   memcpy(new_header->smac, packet + 6, 6);     /* src mac     */
+   new_header->length = pkthdr->len;            /* Packet size */
 
-    /* Get packet ethernet header data and fill struct */
-    memcpy(new_header->dmac, packet, 6);         /* dest mac    */
-    memcpy(new_header->smac, packet + 6, 6);     /* src mac     */
-    new_header->length = pkthdr->len;            /* Packet size */
+   /* Discard packets with our mac as source */
+   if (memcmp(new_header->smac, smac, 6) != 0) {
 
-    /* Discard packets with our mac as source */
-    if (memcmp(new_header->smac, smac, 6) != 0)
-    {
-        unsigned char type[2];
-        memcpy(type, packet + 20, 2);
+      unsigned char type[2];
+      memcpy(type, packet + 20, 2);
+
+      struct data_registry *new_reg;
+      new_reg = (struct data_registry *) malloc (sizeof(struct data_registry));
+      new_reg->header = new_header;  /* Add header */
+      process_arp_header(new_reg, packet);
 
         /* Check if its ARP request or reply, and add it to list */
-        if (memcmp(type, ARP_REPLY, 2) == 0)
-        {
-            struct arp_rep_l *new_arprep_l;
-            new_arprep_l = (struct arp_rep_l *) malloc (sizeof(struct arp_rep_l));
+        if (memcmp(type, ARP_REPLY, 2) == 0) {
+            new_reg->type = 2;             /* Arp Type */
+            _data_reply.add_registry(new_reg);
 
-            /* Populate basic arp info */
-            new_arprep_l->header = new_header;  /* Add header */
-            new_arprep_l->type = 2;             /* Arp Type */
-
-            process_arp_header( (void *)new_arprep_l, 2, packet);
-            arprep_add(new_arprep_l);
-        }
-        else if (memcmp(type, ARP_REQUEST, 2) == 0)
-        {
-            struct arp_req_l *new_arpreq_l;
-            new_arpreq_l = (struct arp_req_l *) malloc (sizeof(struct arp_req_l));
-
-            /* Populate basic arp info */
-            new_arpreq_l->header = new_header;  /* Add header */
-            new_arpreq_l->type = 1;             /* Arp Type */
-
-            process_arp_header( (void *)new_arpreq_l, 1, packet);
-            arpreq_add(new_arpreq_l);
+        } else if (memcmp(type, ARP_REQUEST, 2) == 0) {
+            new_reg->type = 1;             /* Arp Type */
+            _data_request.add_registry(new_reg);
         }
     }
 }
 
 /* Handle arp packet header */
-void process_arp_header(void *arp, u_int8_t type, const u_char* packet)
+void process_arp_header(struct data_registry *new_reg, const u_char* packet)
 {
-    /* Handle arp argument depending on type */
-    #if (type == NARP_REPLY)
-        #define arp_current arp_rep_l
-    #else
-        #define arp_current arp_req_l
-    #endif
 
-
-    struct arp_current *new_arp;
-    new_arp = (struct arp_current *)arp;
-
-    /* Populate basic common arp info */
-    new_arp->count = 1;
-    new_arp->next = NULL;
+    /* Populate basic common registry info */
+    new_reg->count = 1;
+    new_reg->next = NULL;
 
     /* Allocate memory for ip addrs */
-    new_arp->sip = (char *) malloc (sizeof(char) * 16);
-    new_arp->dip = (char *) malloc (sizeof(char) * 16);
+    new_reg->sip = (char *) malloc (sizeof(char) * 16);
+    new_reg->dip = (char *) malloc (sizeof(char) * 16);
 
     /* Source IP */
-    sprintf(new_arp->sip, "%d.%d.%d.%d",
+    sprintf(new_reg->sip, "%d.%d.%d.%d",
             packet[28], packet[29], packet[30], packet[31]);
 
     /* Destination IP */
-    sprintf(new_arp->dip, "%d.%d.%d.%d",
+    sprintf(new_reg->dip, "%d.%d.%d.%d",
             packet[38], packet[39], packet[40], packet[41]);
 }
 

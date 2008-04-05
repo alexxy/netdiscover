@@ -1,0 +1,183 @@
+/***************************************************************************
+ *            data_request.c
+ *
+ *  Sat Apr  5 09:36:32 CEST 2008
+ *  Copyright  2008  Jaime Penalba Estebanez
+ *  jpenalbae@gmail.com
+ *
+ *  Data abstraction layer part for arp request
+ ****************************************************************************/
+
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <pthread.h>
+
+#include "misc.h"
+#include "data_al.h"
+
+
+/* Pointers to hold list data */
+struct data_registry *request_first, *request_last;
+
+/* Pointer to handle list */
+struct data_registry *request_current;
+
+/* Registry data counter */
+struct data_counter request_count;
+
+/* Mutexes for accessing lists */
+pthread_mutex_t *request_mutex;
+
+/* Screen printing buffers */
+char line[300], tline[300];
+extern char blank[];
+
+
+/* Initialize required data */
+void request_init()
+{
+   request_first = NULL;
+   request_last = NULL;
+
+   /* Mutex for list access */
+   request_mutex =(pthread_mutex_t *)malloc(sizeof (pthread_mutex_t));
+   pthread_mutex_init(request_mutex, NULL);
+}
+
+/* Used to beging the iteration between registries */
+void request_beginning_registry() { request_current = request_first; }
+
+/* Go to next registry */
+void request_next_registry(void) { request_current = request_current->next; }
+
+/* Return current registry mainly to check if its null */
+struct data_registry *request_current_registry(void) {return request_current;}
+
+/* Not required in this mode */
+void request_print_parseable_line(struct data_registry *registry) { /* NULL */ }
+
+
+/* Print current registry line (for interactive mode) */
+void request_print_line()
+{
+   int j;
+
+   sprintf(line, " ");
+   sprintf(tline, " ");
+
+   /* Get source IP */
+   sprintf(tline, "%s ", request_current->sip);
+   strcat(line, tline);
+
+   /* Fill with spaces */
+   for (j=strlen(line); j<17; j++)
+      strcat(line, blank);
+
+   /* Get source MAC */
+   sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x   ",
+      request_current->header->smac[0], request_current->header->smac[1],
+      request_current->header->smac[2], request_current->header->smac[3],
+      request_current->header->smac[4], request_current->header->smac[5]);
+   strcat(line, tline);
+
+   /* Get destination IP */
+   sprintf(tline, "%s", request_current->dip);
+   strcat(line, tline);
+
+   /* Fill with spaces */
+   for (j=strlen(line); j<54; j++)
+      strcat(line, blank);
+
+   /* Count, Length & Vendor */
+   sprintf(tline, "%02d", request_current->count);
+   strcat(line, tline);
+
+   /* Fill again with spaces */
+   for (j=strlen(line); j<win_sz.ws_col - 1; j++)
+      strcat(line, blank);
+
+   printf("%s\n", line);
+}
+
+
+/* Add new data to the registry list */
+void request_add_registry(struct data_registry *registry)
+{
+   int i = 0;
+
+   pthread_mutex_lock(request_mutex);
+   _data_unique.add_registry(registry);
+
+   if ( request_first == NULL )
+   {
+      request_count.hosts++;
+      registry->vendor = search_vendor(registry->header->smac);
+
+      request_first = registry;
+      request_last = registry;
+
+   } else {
+
+      struct data_registry *tmp_request;
+      tmp_request = request_first;
+
+      /* Check for dupe packets */
+      while ( tmp_request != NULL && i != 1 ) {
+
+         if ( ( strcmp(tmp_request->sip, registry->sip) == 0 ) &&
+            ( memcmp(tmp_request->header->smac, registry->header->smac, 6) == 0 ) ) {
+
+            tmp_request->count++;
+            tmp_request->header->length += registry->header->length;
+
+            i = 1;
+         }
+
+         tmp_request = tmp_request->next;
+      }
+
+      /* Add it if isnt dupe */
+      if ( i != 1 ) {
+
+         request_count.hosts++;
+         registry->vendor = search_vendor(registry->header->smac);
+
+         request_last->next = registry;
+         request_last = registry;
+      }
+   }
+
+   request_count.pakets++;
+   request_count.length += registry->header->length;
+
+   pthread_mutex_unlock(request_mutex);
+}
+
+
+/* Arp reply data abstraction functions */
+const struct data_al _data_request = {
+   request_init,
+   request_beginning_registry,
+   request_next_registry,
+   request_current_registry,
+   request_print_parseable_line,
+   request_print_line,
+   request_add_registry
+};

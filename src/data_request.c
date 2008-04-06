@@ -70,9 +70,6 @@ void request_next_registry(void) { request_current = request_current->next; }
 /* Return current registry mainly to check if its null */
 struct data_registry *request_current_registry(void) {return request_current;}
 
-/* Not required in this mode */
-void request_print_parseable_line(struct data_registry *registry) { /* NULL */ }
-
 
 /* Print current registry line (for interactive mode) */
 void request_print_line()
@@ -177,7 +174,6 @@ const struct data_al _data_request = {
    request_beginning_registry,
    request_next_registry,
    request_current_registry,
-   request_print_parseable_line,
    request_print_line,
    request_add_registry
 };

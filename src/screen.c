@@ -92,12 +92,9 @@ void init_lists()
 /* Handle signals and set terminal */
 void sighandler(int signum)
 {
-   if (signum == SIGCONT)
-   {
+   if (signum == SIGCONT) {
       tcsetattr(0,TCSANOW,&working_settings);
-   }
-   else
-   {
+   } else {
       tcsetattr(0,TCSANOW,&stored_settings);
       signal(SIGINT, SIG_DFL);
       signal(SIGTERM, SIG_DFL);
@@ -113,56 +110,47 @@ void sighandler(int signum)
 /* Read input keys */
 void read_key()
 {
-    int ch;
-    ch = getchar();
+   int ch;
+   ch = getchar();
 
-    /* Check for arrow keys */
-    if ( ch == 27)
-    {
-        ch = getchar();
+   /* Check for arrow keys */
+   if ( ch == 27) {
+      ch = getchar();
 
-        if (ch == 91)
-        {
-            ch = getchar();
+      if (ch == 91) {
+         ch = getchar();
 
-            if (ch == 66)
-                ch = 106;
-            else if (ch == 65)
-                ch = 107;
-        }
-    }
+         if (ch == 66)
+            ch = 106;
+         else if (ch == 65)
+            ch = 107;
+      }
+   }
 
 
-    /* Key functions */
-    if((ch == 107) && (scroll > 0))
-      scroll -= 1;      // UP
-    else if (ch == 106)
-       scroll += 1;     // DOWN
-    else if (ch == 114)
-    {
-       smode = SMODE_REQUEST;       // PRINT REQUEST
-       scroll = 0;
-    }
-    else if (ch == 97)
-    {
-       smode = SMODE_REPLY;       // PRINT REPLIES
-       scroll = 0;
-    }
-    else if (ch == 117)
-    {
-        smode = SMODE_HOST;       // PRINT HOSTS
-        scroll = 0;
-    }
-    else if ((ch == 113) && (smode != 2) )
-       sighandler(0);   // QUIT
-    else if ((ch == 113) && (smode == 2) )
-       smode = oldmode; // close screen
-    else if ((ch == 104) && (smode != 2))
-    {
-       scroll = 0;
-       oldmode = smode; // PRINT HELP
-       smode = SMODE_HELP;
-    }
+   /* Key functions */
+   if((ch == 107) && (scroll > 0))
+      scroll -= 1;                  // UP
+   else if (ch == 106)
+      scroll += 1;                  // DOWN
+   else if (ch == 114) {
+      smode = SMODE_REQUEST;        // PRINT REQUEST
+      scroll = 0;
+   } else if (ch == 97) {
+      smode = SMODE_REPLY;          // PRINT REPLIES
+      scroll = 0;
+   } else if (ch == 117) {
+      smode = SMODE_HOST;           // PRINT HOSTS
+      scroll = 0;
+   } else if ((ch == 113) && (smode != 2) )
+      sighandler(0);                         // QUIT
+   else if ((ch == 113) && (smode == 2) )
+      smode = oldmode;                       // close screen
+   else if ((ch == 104) && (smode != 2)) {
+      scroll = 0;
+      oldmode = smode;                       // PRINT HELP
+      smode = SMODE_HELP;
+   }
     /* Debug code
     else
     {
@@ -170,7 +158,7 @@ void read_key()
         sleep(2);
     } */
 
-    print_screen();
+   print_screen();
 }
 
 
@@ -260,20 +248,20 @@ void fill_screen()
    } else if(smode == SMODE_HELP) {
       int i;
 
-       printf("\n"
-               "\t  ______________________________________________  \n"
-               "\t |                                              | \n"
-               "\t |    \33[1mHelp screen\33[0m                               | \n"
-               "\t |                                              | \n"
-               "\t |     h: show this help screen                 | \n"
-               "\t |     j: scroll down (or down arrow)           | \n"
-               "\t |     k: scroll up   (or up arrow)             | \n"
-               "\t |     a: show arp replys list                  | \n"
-               "\t |     r: show arp requests list                | \n"
-               "\t |     u: show unique hosts detected            | \n"
-               "\t |     q: exit this screen or end               | \n"
-               "\t |                                              | \n"
-               "\t  ----------------------------------------------  \n");
+      printf("\n"
+            "\t  ______________________________________________  \n"
+            "\t |                                              | \n"
+            "\t |    \33[1mHelp screen\33[0m                               | \n"
+            "\t |                                              | \n"
+            "\t |     h: show this help screen                 | \n"
+            "\t |     j: scroll down (or down arrow)           | \n"
+            "\t |     k: scroll up   (or up arrow)             | \n"
+            "\t |     a: show arp replys list                  | \n"
+            "\t |     r: show arp requests list                | \n"
+            "\t |     u: show unique hosts detected            | \n"
+            "\t |     q: exit this screen or end               | \n"
+            "\t |                                              | \n"
+            "\t  ----------------------------------------------  \n");
 
 
 

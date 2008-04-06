@@ -70,9 +70,6 @@ void reply_next_registry(void) { current_reply = current_reply->next; }
 /* Return current registry mainly to check if its null */
 struct data_registry *reply_current_reply(void) { return current_reply; }
 
-/* Not required in this mode */
-void reply_print_parseable_line(struct data_registry *registry) { /* NULL */ }
-
 
 /* Print current registry line (for interactive mode) */
 void reply_print_line()
@@ -170,7 +167,6 @@ const struct data_al _data_reply = {
    reply_beginning_registry,
    reply_next_registry,
    reply_current_reply,
-   reply_print_parseable_line,
    reply_print_line,
    reply_add_registry
 };

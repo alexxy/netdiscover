@@ -70,9 +70,6 @@ void unique_next_registry(void) { current_unique = current_unique->next; }
 /* Return current registry mainly to check if its null */
 struct data_registry *unique_current_unique(void) { return current_unique; }
 
-/* Not required in this mode */
-void unique_print_parseable_line(struct data_registry *registry) { /* NULL */ }
-
 
 /* Print current registry line (for interactive mode) */
 void unique_print_line()
@@ -99,7 +96,7 @@ void unique_print_line()
 
    /* Count, Length & Vendor */
    sprintf(tline, "%02d    %03d   %s", current_unique->count, 
-      current_unique->header->length, current_unique->vendor );
+      current_unique->tlength, current_unique->vendor );
    strcat(line, tline);
 
    /* Fill again with spaces */
@@ -114,16 +111,21 @@ void unique_print_line()
 void unique_add_registry(struct data_registry *registry)
 {
    int i = 0;
+   struct data_registry *new_data;
 
    pthread_mutex_lock(unique_mutex);
 
    if ( first_unique == NULL )
    {
-      unique_count.hosts++;
-      registry->vendor = search_vendor(registry->header->smac);
+      /* Duplicate this registry, as the pointer is being used by rep/req al */
+      new_data = (struct data_registry *) malloc (sizeof(struct data_registry));
+      *new_data = *registry;
 
-      first_unique = registry;
-      last_unique = registry;
+      unique_count.hosts++;
+      new_data->vendor = search_vendor(new_data->header->smac);
+
+      first_unique = new_data;
+      last_unique = new_data;
 
    } else {
 
@@ -137,7 +139,7 @@ void unique_add_registry(struct data_registry *registry)
             ( memcmp(tmp_registry->header->smac, registry->header->smac, 6) == 0 ) ) {
 
             tmp_registry->count++;
-            tmp_registry->header->length += registry->header->length;
+            tmp_registry->tlength += registry->header->length;
 
             i = 1;
          }
@@ -148,11 +150,15 @@ void unique_add_registry(struct data_registry *registry)
       /* Add it if isnt dupe */
       if ( i != 1 ) {
 
-         unique_count.hosts++;
-         registry->vendor = search_vendor(registry->header->smac);
+         /* Duplicate this registry, as the pointer is being used by rep/req al */
+         new_data = (struct data_registry *) malloc (sizeof(struct data_registry));
+         *new_data = *registry;
 
-         last_unique->next = registry;
-         last_unique = registry;
+         unique_count.hosts++;
+         new_data->vendor = search_vendor(new_data->header->smac);
+
+         last_unique->next = new_data;
+         last_unique = new_data;
       }
    }
 
@@ -169,7 +175,6 @@ const struct data_al _data_unique = {
    unique_beginning_registry,
    unique_next_registry,
    unique_current_unique,
-   unique_print_parseable_line,
    unique_print_line,
    unique_add_registry
 };

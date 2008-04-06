@@ -35,40 +35,43 @@ extern "C"
 #endif
 
 
+/* Holds each data type total counters */
 struct data_counter {
-    unsigned int pakets;
-    unsigned int hosts;
-    unsigned int length;
+    unsigned int pakets;   // Total pakets
+    unsigned int hosts;    // Total hosts
+    unsigned int length;   // Total length
 };
 
 
-/* holds headers packet data */
+/* Holds ethernet headers packet data */
 struct p_header {
-   unsigned char smac[6];
-   unsigned char dmac[6];
-   unsigned int length;
+   unsigned char smac[6];     // Source MAC
+   unsigned char dmac[6];     // Destination MAC
+   unsigned int length;       // Paket length
 };
 
 
+/* Holds registry data */
 struct data_registry {
-   struct p_header *header;
-   char *sip;
-   char *dip;
-   char *vendor;
-   short type;
-   unsigned int count;
-   struct data_registry *next;
+   struct p_header *header;      // Ethernet data header
+   char *sip;                    // Source IP
+   char *dip;                    // Destination IP
+   char *vendor;                 // MAC vendor
+   short type;                   // Paket type
+   unsigned int count;           // Total pakets count
+   unsigned int tlength;         // Total pakets length
+   struct data_registry *next;   // Next registry
 };
 
 
+/* Holds data abstraction layer for data types */
 struct data_al {
-   void (*init)(void);
-   void (*beginning_registry)(void);
-   void (*next_registry)(void);
-   struct data_registry *(*current_registry)(void);
-   void (*print_parseable_line)(struct data_registry *registry);
-   void (*print_line)(void);
-   void (*add_registry)(struct data_registry *registry);
+   void (*init)(void);                                      // Init data
+   void (*beginning_registry)(void);                        // Go to 1st reg
+   void (*next_registry)(void);                             // Go to next reg
+   struct data_registry *(*current_registry)(void);         // Get current reg
+   void (*print_line)(void);                                // Print reg line
+   void (*add_registry)(struct data_registry *registry);    // Add new registry
 };
 
 

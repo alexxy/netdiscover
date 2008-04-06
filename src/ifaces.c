@@ -107,7 +107,7 @@ void process_packet(u_char *args, struct pcap_pkthdr* pkthdr,
 {
    struct p_header *new_header;
    new_header = (struct p_header *) malloc (sizeof(struct p_header));
-   
+
    /* Get packet ethernet header data and fill struct */
    memcpy(new_header->dmac, packet, 6);         /* dest mac    */
    memcpy(new_header->smac, packet + 6, 6);     /* src mac     */
@@ -121,18 +121,19 @@ void process_packet(u_char *args, struct pcap_pkthdr* pkthdr,
 
       struct data_registry *new_reg;
       new_reg = (struct data_registry *) malloc (sizeof(struct data_registry));
-      new_reg->header = new_header;  /* Add header */
+      new_reg->header = new_header;
+      new_reg->tlength = new_header->length;
       process_arp_header(new_reg, packet);
 
-        /* Check if its ARP request or reply, and add it to list */
-        if (memcmp(type, ARP_REPLY, 2) == 0) {
-            new_reg->type = 2;             /* Arp Type */
-            _data_reply.add_registry(new_reg);
+      /* Check if its ARP request or reply, and add it to list */
+      if (memcmp(type, ARP_REPLY, 2) == 0) {
+         new_reg->type = 2;             /* Arp Type */
+         _data_reply.add_registry(new_reg);
 
-        } else if (memcmp(type, ARP_REQUEST, 2) == 0) {
-            new_reg->type = 1;             /* Arp Type */
-            _data_request.add_registry(new_reg);
-        }
+      } else if (memcmp(type, ARP_REQUEST, 2) == 0) {
+         new_reg->type = 1;             /* Arp Type */
+         _data_request.add_registry(new_reg);
+      }
     }
 }
 

@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 #include <pthread.h>
 
@@ -127,6 +128,10 @@ void unique_add_registry(struct data_registry *registry)
       first_unique = new_data;
       last_unique = new_data;
 
+      /* Set for printing if parsable_output is enabled */
+      if (parsable_output)
+         current_unique = new_data;
+
    } else {
 
       struct data_registry *tmp_registry;
@@ -140,6 +145,10 @@ void unique_add_registry(struct data_registry *registry)
 
             tmp_registry->count++;
             tmp_registry->tlength += registry->header->length;
+
+            /* Not required to print if parsable_output is enabled */
+            if (parsable_output)
+               current_unique = NULL;
 
             i = 1;
          }
@@ -159,6 +168,10 @@ void unique_add_registry(struct data_registry *registry)
 
          last_unique->next = new_data;
          last_unique = new_data;
+
+         /* Set for printing if parsable_output is enabled */
+         if (parsable_output)
+            current_unique = new_data;
       }
    }
 
@@ -166,7 +179,47 @@ void unique_add_registry(struct data_registry *registry)
    unique_count.length += registry->header->length;
 
    pthread_mutex_unlock(unique_mutex);
+
+   if (current_unique != NULL)
+      unique_print_line();
 }
+
+void unique_print_header_sumary(int width)
+{
+   int j;
+
+   sprintf(line, " %i Captured ARP Req/Rep packets, from %i hosts.   Total size: %i", 
+            unique_count.pakets, unique_count.hosts, unique_count.length);
+   printf("%s", line);
+
+   /* Fill with spaces */
+   for (j=strlen(line); j<width - 1; j++)
+         printf(" ");
+   printf("\n");
+}
+
+void unique_print_simple_header()
+{
+   printf(" _____________________________________________________________________________\n");
+   printf("   IP            At MAC Address      Count  Len   MAC Vendor                   \n");
+   printf(" ----------------------------------------------------------------------------- \n");
+}
+
+void unique_print_header(int width)
+{
+   unique_print_header_sumary(width);
+   unique_print_simple_header();
+}
+
+
+/* Return total pakets */
+int unique_paket_count() { return unique_count.pakets; }
+
+/* Return total hosts */
+int unique_hosts_count() { return unique_count.hosts; }
+
+/* Return total length */
+int unique_length_count() { return unique_count.length; }
 
 
 /* Arp reply data abstraction functions */
@@ -176,5 +229,26 @@ const struct data_al _data_unique = {
    unique_next_registry,
    unique_current_unique,
    unique_print_line,
-   unique_add_registry
+   unique_print_header,
+   unique_add_registry,
+   unique_print_simple_header
 };
+
+
+/* Extra function to print parseable mode end */
+void parseable_scan_end() {
+
+   /* Wait for last replys */
+   sleep(1);
+
+   /* Print End */
+   printf("\n-- Active scan completed, %i Hosts found.",  unique_count.hosts);
+
+   /* Exit or continue listening */
+   if( continue_listening ) {
+      printf(" Continuing to listen passively.\n\n");
+   } else {
+      printf("\n");
+      sighandler(0); // QUIT
+   }
+}

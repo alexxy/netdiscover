@@ -161,6 +161,29 @@ void reply_add_registry(struct data_registry *registry)
 }
 
 
+void reply_print_header_sumary(int width)
+{
+   int j;
+
+   sprintf(line, " %i Captured ARP Reply packets, from %i hosts.   Total size: %i", 
+            reply_count.pakets, reply_count.hosts, reply_count.length);
+   printf("%s", line);
+
+   /* Fill with spaces */
+   for (j=strlen(line); j<width - 1; j++)
+         printf(" ");
+   printf("\n");
+}
+
+void reply_print_header(int width)
+{
+   reply_print_header_sumary(width);
+   printf(" _____________________________________________________________________________\n");
+   printf("   IP            At MAC Address      Count  Len   MAC Vendor                   \n");
+   printf(" ----------------------------------------------------------------------------- \n");
+}
+
+
 /* Arp reply data abstraction functions */
 const struct data_al _data_reply = {
    reply_init,
@@ -168,5 +191,6 @@ const struct data_al _data_reply = {
    reply_next_registry,
    reply_current_reply,
    reply_print_line,
+   reply_print_header,
    reply_add_registry
 };

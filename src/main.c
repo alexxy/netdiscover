@@ -43,6 +43,7 @@
 #define FPATH  "%s/.netdiscover/fastips"
 
 
+extern void parseable_scan_end();
 void *inject_arp(void *arg);
 void *screen_refresh(void *arg);
 void *parsable_screen_refresh(void *arg);
@@ -103,7 +104,7 @@ int main(int argc, char **argv)
    int esniff = 0;
    int erange = 0;
    int elist = 0;
-   char *plist;
+   char *plist = NULL;
 
    /* Config file handling vars */
    char *home, *path;
@@ -111,7 +112,6 @@ int main(int argc, char **argv)
    struct t_data datos;
 
    /* Some default values */
-   plist = NULL;
    datos.sip = NULL;
    datos.disp = NULL;
    datos.filter = NULL;
@@ -254,9 +254,12 @@ int main(int argc, char **argv)
       }
    }
 
-   /* Init libnet and lists */
+   /* Init libnet, data layers and screen */
    lnet_init(datos.disp);
-   init_lists();
+   _data_reply.init();
+   _data_request.init();
+   _data_unique.init();
+   init_screen();
 
    /* If no mode was selected, enable auto scan */
    if ((erange != 1) && (esniff != 1))
@@ -264,7 +267,7 @@ int main(int argc, char **argv)
 
    /* Start the execution */
    if (parsable_output) {
-      pthread_create(&screen, NULL, parsable_screen_refresh, (void *)NULL);
+      _data_unique.print_simple_header();
 
    } else {
       system("clear");
@@ -295,23 +298,12 @@ int main(int argc, char **argv)
 /* Refresh screen function called by screen thread */
 void *screen_refresh(void *arg)
 {
-    while (1==1)
-    {
+    while (1==1) {
         print_screen();
         sleep(1);
     }
 }
 
-/* Refresh parsable screen function called by screen thread */
-void *parsable_screen_refresh(void *arg)
-{
-	print_header();
-	while (1==1)
-	{
-		//print_parsable_screen();
-        usleep(500000); /* half a second */
-	}
-}
 
 /* Start the arp injection on the given network device */
 void *inject_arp(void *arg)
@@ -344,10 +336,9 @@ void *inject_arp(void *arg)
    sprintf(current_network, "Finished!");
    lnet_destroy();
 
+   /* If parseable output is enabled, print end and exit */
    if(parsable_output)
-   {
-      //parsable_output_scan_completed(); /* defined in screen.c */
-   }
+      parseable_scan_end();
 
    return NULL;
 }

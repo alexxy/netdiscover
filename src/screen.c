@@ -58,16 +58,11 @@ char blank[] = " ";
 
 
 /* Inits lists with null pointers, sighandlers, etc */
-void init_lists()
+void init_screen()
 {
    /* Interface properties */
    scroll = 0;
-   smode = 0;
-
-   /* Init data layers */
-   _data_reply.init();
-   _data_request.init();
-   _data_unique.init();
+   smode = SMODE_HOST;
 
    /* Set signal handlers */
    signal( SIGINT,   sighandler );
@@ -130,23 +125,23 @@ void read_key()
 
    /* Key functions */
    if((ch == 107) && (scroll > 0))
-      scroll -= 1;                  // UP
+      scroll -= 1;                           // UP
    else if (ch == 106)
-      scroll += 1;                  // DOWN
+      scroll += 1;                           // DOWN
    else if (ch == 114) {
-      smode = SMODE_REQUEST;        // PRINT REQUEST
+      smode = SMODE_REQUEST;                 // PRINT REQUEST
       scroll = 0;
    } else if (ch == 97) {
-      smode = SMODE_REPLY;          // PRINT REPLIES
+      smode = SMODE_REPLY;                   // PRINT REPLIES
       scroll = 0;
    } else if (ch == 117) {
-      smode = SMODE_HOST;           // PRINT HOSTS
+      smode = SMODE_HOST;                    // PRINT HOSTS
       scroll = 0;
-   } else if ((ch == 113) && (smode != 2) )
+   } else if ((ch == 113) && (smode != SMODE_HELP) )
       sighandler(0);                         // QUIT
-   else if ((ch == 113) && (smode == 2) )
-      smode = oldmode;                       // close screen
-   else if ((ch == 104) && (smode != 2)) {
+   else if ((ch == 113) && (smode == SMODE_HELP) )
+      smode = oldmode;                       // CLOSE HELP
+   else if ((ch == 104) && (smode != SMODE_HELP)) {
       scroll = 0;
       oldmode = smode;                       // PRINT HELP
       smode = SMODE_HELP;
@@ -179,17 +174,29 @@ void print_screen()
 }
 
 
-/* Fills the screen using white spaces to avoid refresh problems  *
- * not a very smart way, but it works :)                          */
-void fill_screen()
+/* Print header line containing scanning and current screen mode */
+void print_status_header()
 {
-   int x, j;
-   const struct data_al *current_data_mode;
+   int j;
+   char *current_smode = NULL;
 
-   x = 0;	
+   switch (smode) {
+      case SMODE_REPLY:
+            current_smode = "ARP Reply";
+         break;
+      case SMODE_REQUEST:
+            current_smode = "ARP Request";
+         break;
+      case SMODE_HOST:
+            current_smode = "Unique Hosts";
+         break;
+      case SMODE_HELP:
+            current_smode = "Help";
+         break;
+   }
 
-   sprintf(line, " Currently scanning: %s   |   Our Mac is: %s", 
-           current_network, ourmac);
+   sprintf(line, " Currently scanning: %s   |   Screen View: %s", 
+           current_network, current_smode);
    printf("%s", line);
 
    /* Fill with spaces */
@@ -201,41 +208,46 @@ void fill_screen()
     for (j=0; j<win_sz.ws_col - 1; j++)
          printf(" ");
     printf("\n");
+}
 
 
-   sprintf(line, " 0 Captured ARP Req/Rep packets, from 0 hosts.   Total size: 0" );
-           //arprep_count->count, arprep_count->hosts, arprep_count->length);
-   printf("%s", line);
-	
-   /* Fill with spaces */
-   for (j=strlen(line); j<win_sz.ws_col - 1; j++)
-         printf(" ");
-   printf("\n");
-	
-   /* Print Header and counters */
-   print_header();
+/* Fills the screen using white spaces to avoid refresh problems  *
+ * not a very smart way, but it works :)                          */
+void fill_screen()
+{
+   const struct data_al *current_data_mode;
 
+   /* Use a data layer depending on current screen mode */
+   current_data_mode = NULL;
+   switch (smode) {
+      case SMODE_REPLY:
+            current_data_mode = &_data_reply;
+         break;
+      case SMODE_REQUEST:
+            current_data_mode = &_data_request;
+         break;
+      case SMODE_HOST:
+            current_data_mode = &_data_unique;
+         break;
+      case SMODE_HELP:
+            current_data_mode = &_data_unique;
+         break;
+   }
+
+   /* Print headers */
+   print_status_header();
+   current_data_mode->print_header(win_sz.ws_col);
+
+   /* Print screen main data */
    if (smode != SMODE_HELP) {
 
-      current_data_mode = NULL;
-      switch (smode) {
-         case SMODE_REPLY:
-               current_data_mode = &_data_reply;
-            break;
-         case SMODE_REQUEST:
-               current_data_mode = &_data_request;
-            break;
-         case SMODE_HOST:
-               current_data_mode = &_data_unique;
-            break;
-      }
+      int x = 0;
 
       current_data_mode->beginning_registry();
       while (current_data_mode->current_registry() != NULL) {
-         if (x >= scroll) {
-            current_data_mode->print_line();
-         }
 
+         if (x >= scroll)
+            current_data_mode->print_line();
 
          current_data_mode->next_registry();
          x++;
@@ -269,94 +281,4 @@ void fill_screen()
            printf("\n");
    }
 }
-
-/* Print Header and counters */
-void print_header()
-{
-	printf(" _____________________________________________________________________________\n");
-	
-    if (smode == SMODE_REPLY || (oldmode == SMODE_REPLY && smode == SMODE_HELP))
-		printf("   IP            At MAC Address      Count  Len   MAC Vendor                   \n");
-	else if (smode == SMODE_REQUEST || (oldmode == SMODE_REQUEST && smode == SMODE_HELP))
-		printf("   IP            At MAC Address      Requests IP     Count                     \n");
-    else if (smode == SMODE_HOST || (oldmode == SMODE_HOST && smode == SMODE_HELP))
-        printf("   IP            At MAC Address      Count  Len   MAC Vendor                   \n");
-	
-    printf(" ----------------------------------------------------------------------------- \n");
-}
-
-/*
-void print_parsable_screen()
-{
-	pthread_mutex_lock(listm);
-	
-	// Header is printed in main.c in parsable_screen_refresh()
-
-    switch (smode)
-    {
-        case SMODE_REPLY:
-            // We initialize our read pointer if there are elements in the list
-            if (last_arprep_printed == NULL && first_arprep != NULL)
-            {
-                last_arprep_printed = first_arprep;
-                print_parsable_line(last_arprep_printed);
-            }
-
-            // We print what we did not read yet in the list
-            if (last_arprep_printed != NULL)
-            {
-                while (last_arprep_printed->next != NULL)
-                {
-                    last_arprep_printed = last_arprep_printed->next;
-                    print_parsable_line(last_arprep_printed);
-                }
-            }
-        break;
-    }
-
-	pthread_mutex_unlock(listm);
-} */
-
-
-/*
-void print_parsable_line(struct arp_rep_l *arprep_l)
-{
-	if (smode == 0)
-	{
-		// Print each found station trough arp reply
-		print_arp_reply_line(last_arprep_printed);
-	}
-} */
-
-
-/*
-void parsable_output_scan_completed()
-{
-	char plural = '\0';
-
-	// Sleep a little to give a chance for all replies to come back 
-	sleep(0.5);
-
-	pthread_mutex_lock(listm);
-
-	if ( arprep_count->hosts > 1 )
-	{
-		plural = 's';
-	}
-	printf("-- Active scan completed, %i IP%c found.", arprep_count->hosts, plural);
-
-	pthread_mutex_unlock(listm);
-
-	if( continue_listening )
-	{
-		printf(" Continuing to listen passively.\n");
-	}
-	else
-	{
-		printf("\n");
-		sighandler(0); // QUIT
-	}
-
-} */
-
 

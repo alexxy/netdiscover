@@ -71,7 +71,9 @@ struct data_al {
    void (*next_registry)(void);                             // Go to next reg
    struct data_registry *(*current_registry)(void);         // Get current reg
    void (*print_line)(void);                                // Print reg line
+   void (*print_header)(int width);                         // Print scr header
    void (*add_registry)(struct data_registry *registry);    // Add new registry
+   void (*print_simple_header)();                           // Print smp header
 };
 
 

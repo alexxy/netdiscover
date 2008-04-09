@@ -55,18 +55,9 @@ int parsable_output, continue_listening;
 /* Screen functions */
 void print_screen();
 void fill_screen();
-void print_header();
-//void print_parsable_screen();
-//void print_parsable_line(struct arp_rep_l *);
-//void print_arp_reply_line(struct arp_rep_l *);
-//void print_arp_request_line(struct arp_req_l *);
-//void print_unique_host_line(struct host_l *);
-//void parsable_output_scan_completed();
 void read_key();
+void init_screen();
 void sighandler(int);
-
-/* Functions to handle pointer lists */
-void init_lists();
 
 
 #ifdef __cplusplus

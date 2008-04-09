@@ -139,6 +139,7 @@ void request_add_registry(struct data_registry *registry)
       while ( tmp_request != NULL && i != 1 ) {
 
          if ( ( strcmp(tmp_request->sip, registry->sip) == 0 ) &&
+            ( strcmp(tmp_request->dip, registry->dip) == 0 ) &&
             ( memcmp(tmp_request->header->smac, registry->header->smac, 6) == 0 ) ) {
 
             tmp_request->count++;
@@ -168,6 +169,29 @@ void request_add_registry(struct data_registry *registry)
 }
 
 
+void request_print_header_sumary(int width)
+{
+   int j;
+
+   sprintf(line, " %i Captured ARP Request packets.   Total size: %i", 
+            request_count.pakets, request_count.length);
+   printf("%s", line);
+
+   /* Fill with spaces */
+   for (j=strlen(line); j<width - 1; j++)
+         printf(" ");
+   printf("\n");
+}
+
+void request_print_header(int width)
+{
+   request_print_header_sumary(width);
+   printf(" _____________________________________________________________________________\n");
+   printf("   IP            At MAC Address      Requests IP     Count                     \n");
+   printf(" ----------------------------------------------------------------------------- \n");
+}
+
+
 /* Arp reply data abstraction functions */
 const struct data_al _data_request = {
    request_init,
@@ -175,5 +199,6 @@ const struct data_al _data_request = {
    request_next_registry,
    request_current_registry,
    request_print_line,
+   request_print_header,
    request_add_registry
 };

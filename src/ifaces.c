@@ -133,6 +133,12 @@ void process_packet(u_char *args, struct pcap_pkthdr* pkthdr,
       } else if (memcmp(type, ARP_REQUEST, 2) == 0) {
          new_reg->type = 1;             /* Arp Type */
          _data_request.add_registry(new_reg);
+
+      } else {
+         free(new_header);
+         free(new_reg->sip);
+         free(new_reg->dip);
+         free(new_reg);
       }
     }
 }

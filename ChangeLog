@@ -1,4 +1,6 @@
 Netdiscover 0.3-beta7 (Currently working on it)
+   * Fixed crash when freeing common ranges list at end of scan
+   * New data abstraction layer added to handle diferent view modes
    * Included script to update oui database.
    * Added custom pcap filter option. Patch by Gustavo Chain.
    * Some code layout clean.

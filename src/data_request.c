@@ -42,9 +42,6 @@ struct data_registry *request_current;
 /* Registry data counter */
 struct data_counter request_count;
 
-/* Mutexes for accessing lists */
-pthread_mutex_t *request_mutex;
-
 /* Screen printing buffers */
 char line[300], tline[300];
 extern char blank[];
@@ -55,10 +52,6 @@ void request_init()
 {
    request_first = NULL;
    request_last = NULL;
-
-   /* Mutex for list access */
-   request_mutex =(pthread_mutex_t *)malloc(sizeof (pthread_mutex_t));
-   pthread_mutex_init(request_mutex, NULL);
 }
 
 /* Used to beging the iteration between registries */
@@ -119,7 +112,6 @@ void request_add_registry(struct data_registry *registry)
 {
    int i = 0;
 
-   pthread_mutex_lock(request_mutex);
    _data_unique.add_registry(registry);
 
    if ( request_first == NULL )
@@ -165,7 +157,6 @@ void request_add_registry(struct data_registry *registry)
    request_count.pakets++;
    request_count.length += registry->header->length;
 
-   pthread_mutex_unlock(request_mutex);
 }
 
 

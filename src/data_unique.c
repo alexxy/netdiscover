@@ -43,9 +43,6 @@ struct data_registry *current_unique;
 /* Registry data counter */
 struct data_counter unique_count;
 
-/* Mutexes for accessing lists */
-pthread_mutex_t *unique_mutex;
-
 /* Screen printing buffers */
 char line[300], tline[300];
 extern char blank[];
@@ -56,10 +53,6 @@ void unique_init()
 {
    first_unique = NULL;
    last_unique = NULL;
-
-   /* Mutex for list access */
-   unique_mutex =(pthread_mutex_t *)malloc(sizeof (pthread_mutex_t));
-   pthread_mutex_init(unique_mutex, NULL);
 }
 
 /* Used to beging the iteration between registries */
@@ -114,7 +107,6 @@ void unique_add_registry(struct data_registry *registry)
    int i = 0;
    struct data_registry *new_data;
 
-   pthread_mutex_lock(unique_mutex);
 
    if ( first_unique == NULL )
    {
@@ -178,10 +170,10 @@ void unique_add_registry(struct data_registry *registry)
    unique_count.pakets++;
    unique_count.length += registry->header->length;
 
-   pthread_mutex_unlock(unique_mutex);
-
-   if (current_unique != NULL)
+   if (current_unique != NULL) {
       unique_print_line();
+      fflush(stdout);
+   }
 }
 
 void unique_print_header_sumary(int width)

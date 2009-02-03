@@ -104,6 +104,7 @@ int main(int argc, char **argv)
    int esniff = 0;
    int erange = 0;
    int elist = 0;
+   int no_parsable_header = 0;
    char *plist = NULL;
 
    /* Config file handling vars */
@@ -124,11 +125,11 @@ int main(int argc, char **argv)
    parsable_output = 0;
    continue_listening = 0;
 
-   current_network = (char *) malloc ((sizeof(char)) * 16);
+   current_network = (char *) malloc ((sizeof(char)) * 19);
    sprintf(current_network, "Starting.");
 
    /* Fetch parameters */
-   while ((c = getopt(argc, argv, "i:s:r:l:n:c:F:pSfdPLh")) != EOF)
+   while ((c = getopt(argc, argv, "i:s:r:l:n:c:F:pSfdPNLh")) != EOF)
    {
       switch (c)
       {
@@ -184,6 +185,10 @@ int main(int argc, char **argv)
 
          case 'P':   /* Produces parsable output (vs interactive screen) */
             parsable_output = 1;
+            break;
+
+         case 'N':   /* Do not print header under parsable mode */
+            no_parsable_header = 1;
             break;
 
          case 'L':   /* Continue to listen in parsable output mode after active scan is completed */
@@ -261,13 +266,19 @@ int main(int argc, char **argv)
    _data_unique.init();
    init_screen();
 
+   /* Init mutex */
+   data_access = (pthread_mutex_t *)malloc(sizeof (pthread_mutex_t));
+   pthread_mutex_init(data_access, NULL);
+
    /* If no mode was selected, enable auto scan */
    if ((erange != 1) && (esniff != 1))
       datos.autos = 1;
 
    /* Start the execution */
    if (parsable_output) {
-      _data_unique.print_simple_header();
+
+      if (!no_parsable_header)
+         _data_unique.print_simple_header();
 
    } else {
       system("clear");
@@ -314,21 +325,16 @@ void *inject_arp(void *arg)
    sleep(2);
 
    /* Scan the given range, or start the auto scan mode */
-   if ( datos->autos != 1 )
-   {
+   if ( datos->autos != 1 ) {
       scan_range(datos->disp, datos->sip);
-   }
-   else
-   {
+
+   } else {
       int x = 0;
 
-      while (common_net[x] != NULL)
-      {
+      while (common_net[x] != NULL) {
          scan_range(datos->disp, common_net[x]);
          x++;
       }
-
-      free(common_net);
    }
 
    /* Wait for last arp replys and mark as scan finished */
@@ -434,7 +440,7 @@ void scan_range(char *disp, char *sip)
    /* Check all parts are ok */
    if ((a == NULL) || (b == NULL) || (c == NULL) || (d == NULL))
    {
-   	e = -1;
+      e = -1;
    } else {
         k = strtol(a, &aux, 10);
         if (k<0 || k>255 || *aux != '\0') e = -1;
@@ -507,6 +513,7 @@ void usage(char *comando)
       "  -d ignore home config files for autoscan and fast mode\n"
       "  -S enable sleep time supression betwen each request (hardcore mode)\n"
       "  -P print results in a format suitable for parsing by another program\n"
+      "  -N Do not print header. Only valid when -P is enabled.\n"
       "  -L in parsable output mode (-P), continue listening after the active scan is completed\n\n"
       "If -r, -l or -p are not enabled, netdiscover will scan for common lan addresses.\n",
       VERSION, comando);

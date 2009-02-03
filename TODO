@@ -1,4 +1,5 @@
 - Autoupdate script for oui.h
+- Mac ignore filter
 - Improve Arp request view
 - Add support to sort entries
 - Make parsable output compatible with the three view modes

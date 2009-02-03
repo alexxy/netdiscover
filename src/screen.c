@@ -64,40 +64,45 @@ void init_screen()
    scroll = 0;
    smode = SMODE_HOST;
 
-   /* Set signal handlers */
-   signal( SIGINT,   sighandler );
-   signal( SIGKILL,   sighandler );
-   signal( SIGTERM,   sighandler );
-   signal( SIGHUP,   sighandler );
-   signal( SIGABRT,   sighandler );
-   signal( SIGCONT,   sighandler );
+   /* Set interative mode options if no parsable mode */
+   if(!parsable_output) {
+      /* Set signal handlers */
+      signal( SIGCONT, sighandler );
+      signal( SIGINT, sighandler );
+      signal( SIGKILL, sighandler );
+      signal( SIGTERM, sighandler );
+      signal( SIGHUP, sighandler );
+      signal( SIGABRT, sighandler );
 
-   /* Set console properties to read keys */
-   tcgetattr(0,&stored_settings);
-   working_settings = stored_settings;
+      /* Set console properties to read keys */
+      tcgetattr(0,&stored_settings);
+      working_settings = stored_settings;
 
-   working_settings.c_lflag &= ~(ICANON|ECHO);
-   working_settings.c_cc[VTIME] = 0;
-   working_settings.c_cc[VMIN] = 1;
-
-   tcsetattr(0,TCSANOW,&working_settings);
+      working_settings.c_lflag &= ~(ICANON|ECHO);
+      working_settings.c_cc[VTIME] = 0;
+      working_settings.c_cc[VMIN] = 1;
+      tcsetattr(0,TCSANOW,&working_settings);
+   }
 }
 
 
 /* Handle signals and set terminal */
 void sighandler(int signum)
 {
-   if (signum == SIGCONT) {
-      tcsetattr(0,TCSANOW,&working_settings);
+   if (parsable_output) {
+      exit(0);
    } else {
-      tcsetattr(0,TCSANOW,&stored_settings);
-      signal(SIGINT, SIG_DFL);
-      signal(SIGTERM, SIG_DFL);
+      if (signum == SIGCONT) {
+         tcsetattr(0,TCSANOW,&working_settings);
+      } else {
+         tcsetattr(0,TCSANOW,&stored_settings);
 
-      if (!parsable_output)
+         signal(SIGINT, SIG_DFL);
+         signal(SIGTERM, SIG_DFL);
          pthread_kill(keys, signum);
 
-      exit(0);
+         exit(0);
+      }
    }
 }
 
@@ -168,7 +173,9 @@ void print_screen()
 
    /* Flush and print screen */
    fprintf( stderr, "\33[1;1H" );
+   pthread_mutex_lock(data_access);
    fill_screen();
+   pthread_mutex_unlock(data_access);
    fprintf( stderr, "\33[J" );
    fflush(stdout);
 }

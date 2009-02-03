@@ -128,11 +128,15 @@ void process_packet(u_char *args, struct pcap_pkthdr* pkthdr,
       /* Check if its ARP request or reply, and add it to list */
       if (memcmp(type, ARP_REPLY, 2) == 0) {
          new_reg->type = 2;             /* Arp Type */
+         pthread_mutex_lock(data_access);
          _data_reply.add_registry(new_reg);
+         pthread_mutex_unlock(data_access);
 
       } else if (memcmp(type, ARP_REQUEST, 2) == 0) {
          new_reg->type = 1;             /* Arp Type */
+         pthread_mutex_lock(data_access);
          _data_request.add_registry(new_reg);
+         pthread_mutex_unlock(data_access);
 
       } else {
          free(new_header);

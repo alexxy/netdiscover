@@ -27,12 +27,15 @@
 #ifndef _DATA_AL_H
 #define _DATA_AL_H
 
+#include <pthread.h>
 #include "screen.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+pthread_mutex_t *data_access;
 
 
 /* Holds each data type total counters */

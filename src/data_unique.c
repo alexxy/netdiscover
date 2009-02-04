@@ -64,6 +64,9 @@ void unique_next_registry(void) { current_unique = current_unique->next; }
 /* Return current registry mainly to check if its null */
 struct data_registry *unique_current_unique(void) { return current_unique; }
 
+/* Return hosts count */
+int unique_hosts_count(void) { return unique_count.hosts; }
+
 
 /* Print current registry line (for interactive mode) */
 void unique_print_line()
@@ -204,16 +207,6 @@ void unique_print_header(int width)
 }
 
 
-/* Return total pakets */
-int unique_paket_count() { return unique_count.pakets; }
-
-/* Return total hosts */
-int unique_hosts_count() { return unique_count.hosts; }
-
-/* Return total length */
-int unique_length_count() { return unique_count.length; }
-
-
 /* Arp reply data abstraction functions */
 const struct data_al _data_unique = {
    unique_init,
@@ -223,6 +216,7 @@ const struct data_al _data_unique = {
    unique_print_line,
    unique_print_header,
    unique_add_registry,
+   unique_hosts_count,
    unique_print_simple_header
 };
 

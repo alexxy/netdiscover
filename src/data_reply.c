@@ -63,6 +63,10 @@ void reply_next_registry(void) { current_reply = current_reply->next; }
 /* Return current registry mainly to check if its null */
 struct data_registry *reply_current_reply(void) { return current_reply; }
 
+/* Return hosts count */
+int reply_hosts_count(void) { return reply_count.hosts; }
+
+
 
 /* Print current registry line (for interactive mode) */
 void reply_print_line()
@@ -183,5 +187,6 @@ const struct data_al _data_reply = {
    reply_current_reply,
    reply_print_line,
    reply_print_header,
-   reply_add_registry
+   reply_add_registry,
+   reply_hosts_count
 };

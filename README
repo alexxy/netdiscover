@@ -25,6 +25,7 @@ Requeriments
 Build
 =====
 
+$ sh update-oui-database.sh (optional)
 $ ./configure
 $ make
 # make install

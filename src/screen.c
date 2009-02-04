@@ -107,6 +107,33 @@ void sighandler(int signum)
 }
 
 
+/* Check scrolling limit */
+int scroll_limit()
+{
+   const struct data_al *current_data_mode;
+
+   /* Use corresponding data layer depending on current screen mode */
+   current_data_mode = NULL;
+
+   switch (smode) {
+      case SMODE_REPLY:
+         current_data_mode = &_data_reply;
+         break;
+      case SMODE_REQUEST:
+         current_data_mode = &_data_request;
+         break;
+      case SMODE_HOST:
+         current_data_mode = &_data_unique;
+         break;
+      case SMODE_HELP:
+         current_data_mode = &_data_unique;
+         break;
+   }
+
+   return current_data_mode->hosts_count() - scroll;
+}
+
+
 /* Read input keys */
 void read_key()
 {
@@ -114,43 +141,53 @@ void read_key()
    ch = getchar();
 
    /* Check for arrow keys */
-   if ( ch == 27) {
-      ch = getchar();
-
-      if (ch == 91) {
-         ch = getchar();
-
-         if (ch == 66)
+   if ( ch == 27 && (ch = getchar()) == 91) {
+      switch (getchar()) {
+         case 66:
             ch = 106;
-         else if (ch == 65)
+            break;
+         case 65:
             ch = 107;
+            break;
       }
    }
 
-
-   /* Key functions */
-   if((ch == 107) && (scroll > 0))
-      scroll -= 1;                           // UP
-   else if (ch == 106)
-      scroll += 1;                           // DOWN
-   else if (ch == 114) {
-      smode = SMODE_REQUEST;                 // PRINT REQUEST
-      scroll = 0;
-   } else if (ch == 97) {
-      smode = SMODE_REPLY;                   // PRINT REPLIES
-      scroll = 0;
-   } else if (ch == 117) {
-      smode = SMODE_HOST;                    // PRINT HOSTS
-      scroll = 0;
-   } else if ((ch == 113) && (smode != SMODE_HELP) )
-      sighandler(0);                         // QUIT
-   else if ((ch == 113) && (smode == SMODE_HELP) )
-      smode = oldmode;                       // CLOSE HELP
-   else if ((ch == 104) && (smode != SMODE_HELP)) {
-      scroll = 0;
-      oldmode = smode;                       // PRINT HELP
-      smode = SMODE_HELP;
+   switch (ch) {
+      case 107:               // Scroll up
+         if (scroll > 0)
+            scroll--;
+         break;
+      case 106:               // Scroll down
+         if (scroll_limit() > 1)
+            scroll++;
+         break;
+      case 114:               // Show requests view
+         smode = SMODE_REQUEST;
+         scroll = 0;
+         break;
+      case 97:                // Show replies view
+         smode = SMODE_REPLY;
+         scroll = 0;
+         break;
+      case 117:               // Show unique hosts view
+         smode = SMODE_HOST;
+         scroll = 0;
+         break;
+      case 113:               // Quit
+         if (smode == SMODE_HELP)
+            smode = oldmode;
+         else
+            sighandler(0);
+         break;
+      case 104:               // Show help screen
+         if (smode != SMODE_HELP) {
+            oldmode = smode;
+            smode = SMODE_HELP;
+            scroll = 0;
+         }
+         break;
    }
+
     /* Debug code
     else
     {
@@ -224,8 +261,9 @@ void fill_screen()
 {
    const struct data_al *current_data_mode;
 
-   /* Use a data layer depending on current screen mode */
+   /* Use corresponding data layer depending on current screen mode */
    current_data_mode = NULL;
+
    switch (smode) {
       case SMODE_REPLY:
             current_data_mode = &_data_reply;
@@ -270,21 +308,24 @@ void fill_screen()
       printf("\n"
             "\t  ______________________________________________  \n"
             "\t |                                              | \n"
-            "\t |    \33[1mHelp screen\33[0m                               | \n"
+            "\t |    \33[1mUsage Keys\33[0m                                | \n"
             "\t |                                              | \n"
             "\t |     h: show this help screen                 | \n"
             "\t |     j: scroll down (or down arrow)           | \n"
             "\t |     k: scroll up   (or up arrow)             | \n"
+            "\t |     q: exit this screen or end               | \n"
+            "\t |                                              | \n"
+            "\t |    \33[1mScreen views\33[0m                              | \n"
+            "\t |                                              | \n"
             "\t |     a: show arp replys list                  | \n"
             "\t |     r: show arp requests list                | \n"
             "\t |     u: show unique hosts detected            | \n"
-            "\t |     q: exit this screen or end               | \n"
             "\t |                                              | \n"
             "\t  ----------------------------------------------  \n");
 
 
 
-       for (i=21; i<win_sz.ws_row; i++)
+       for (i=24; i<win_sz.ws_row; i++)
            printf("\n");
    }
 }

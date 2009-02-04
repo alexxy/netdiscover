@@ -76,6 +76,7 @@ struct data_al {
    void (*print_line)(void);                                // Print reg line
    void (*print_header)(int width);                         // Print scr header
    void (*add_registry)(struct data_registry *registry);    // Add new registry
+   int  (*hosts_count)(void);                               // Get hosts count
    void (*print_simple_header)();                           // Print smp header
 };
 

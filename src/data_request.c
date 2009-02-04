@@ -63,6 +63,9 @@ void request_next_registry(void) { request_current = request_current->next; }
 /* Return current registry mainly to check if its null */
 struct data_registry *request_current_registry(void) {return request_current;}
 
+/* Return hosts count */
+int request_hosts_count(void) { return request_count.hosts; }
+
 
 /* Print current registry line (for interactive mode) */
 void request_print_line()
@@ -164,8 +167,8 @@ void request_print_header_sumary(int width)
 {
    int j;
 
-   sprintf(line, " %i Captured ARP Request packets.   Total size: %i", 
-            request_count.pakets, request_count.length);
+   sprintf(line, " %i Captured ARP Request packets, from %i hosts.   Total size: %i", 
+           request_count.pakets, request_count.hosts, request_count.length);
    printf("%s", line);
 
    /* Fill with spaces */
@@ -191,5 +194,6 @@ const struct data_al _data_request = {
    request_current_registry,
    request_print_line,
    request_print_header,
-   request_add_registry
+   request_add_registry,
+   request_hosts_count
 };

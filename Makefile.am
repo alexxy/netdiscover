@@ -1,30 +1,15 @@
-## Process this file with automake to produce Makefile.in
-## Created by Anjuta - will be overwritten
-## If you don't want it to overwrite it,
-## 	Please disable it in the Anjuta project configuration
-
 SUBDIRS = src doc
 
-netdiscoverdocdir = ${prefix}/doc/netdiscover
-netdiscoverdoc_DATA = \
-	README\
-	README.rpm\
-	COPYING\
-	AUTHORS\
-	ChangeLog\
-	INSTALL\
-	NEWS\
-	TODO
+doc_DATA = \
+        README\
+        COPYING\
+        AUTHORS\
+        ChangeLog\
+        NEWS\
+        TODO
 
-EXTRA_DIST = $(netdiscoverdoc_DATA) rpm/mandriva.spec rpm/redhat.spec
-
-
-
-# Copy all the spec files. Of cource, only one is actually used.
-dist-hook:
-	for specfile in *.spec; do \
-		if test -f $$specfile; then \
-			cp -p $$specfile $(distdir); \
-		fi \
-	done
+EXTRA_DIST = \
+	rpm/mandriva.spec \
+	rpm/redhat.spec \
+	update-oui-database.sh
 

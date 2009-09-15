@@ -16,3 +16,4 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile])
 AC_OUTPUT
 
+printf "\nRun ./update-oui-database.sh if you want a updated MAC vendors database.\n\n"

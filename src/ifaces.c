@@ -85,7 +85,7 @@ void *start_sniffer(void *args)
       printf("pcap_open_live(): %s\n", errbuf);
       sighandler(0); // QUIT
    }
-libnet
+
    /* Set pcap filter */
    filter = (datos->filter == NULL) ? "arp" : datos->filter;
    if(pcap_compile(descr, &fp, filter, 0, 0) == -1) {

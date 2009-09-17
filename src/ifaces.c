@@ -85,7 +85,7 @@ void *start_sniffer(void *args)
       printf("pcap_open_live(): %s\n", errbuf);
       sighandler(0); // QUIT
    }
-
+libnet
    /* Set pcap filter */
    filter = (datos->filter == NULL) ? "arp" : datos->filter;
    if(pcap_compile(descr, &fp, filter, 0, 0) == -1) {
@@ -173,26 +173,26 @@ void lnet_init(char *disp)
 {
 	
    char error[LIBNET_ERRBUF_SIZE];
-	libnet = NULL;
-	
-	/* Init libnet */
-	libnet = libnet_init(LIBNET_LINK, disp, error);
-	if (libnet == NULL) {
-		printf("libnet_init() falied: %s", error);
-		exit(EXIT_FAILURE);
-	}
-	
-	/* Get our mac addr */
-	if (ourmac == NULL) {
-		struct libnet_ether_addr *mymac;
-		mymac = libnet_get_hwaddr(libnet);
-		memcpy(smac, mymac, ETH_ALEN);
-		
-		ourmac = (char *) malloc (sizeof(char) * 18);
-		sprintf(ourmac, "%02x:%02x:%02x:%02x:%02x:%02x",
-			smac[0], smac[1], smac[2], 
-			smac[3], smac[4], smac[5]);
-	}
+   libnet = NULL;
+
+   /* Init libnet */
+   libnet = libnet_init(LIBNET_LINK, disp, error);
+   if (libnet == NULL) {
+      printf("libnet_init() falied: %s", error);
+      exit(EXIT_FAILURE);
+   }
+
+   /* Get our mac addr */
+   if (ourmac == NULL) {
+      struct libnet_ether_addr *mymac;
+      mymac = libnet_get_hwaddr(libnet);
+      memcpy(smac, mymac, ETH_ALEN);
+
+      ourmac = (char *) malloc (sizeof(char) * 18);
+      sprintf(ourmac, "%02x:%02x:%02x:%02x:%02x:%02x",
+            smac[0], smac[1], smac[2],
+            smac[3], smac[4], smac[5]);
+   }
 
 }
 
@@ -200,41 +200,39 @@ void lnet_init(char *disp)
 /* Forge Arp Packet, using libnet */
 void forge_arp(char *source_ip, char *dest_ip, char *disp)
 {
-	static libnet_ptag_t arp=0, eth=0;
-	//static u_char dmac[ETH_ALEN] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-	static u_char dmac[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-	static u_char sip[IP_ALEN];
-	static u_char dip[IP_ALEN];
-	u_int32_t otherip, myip;
+   static libnet_ptag_t arp = 0;
+   static libnet_ptag_t eth = 0;
+   static u_char dmac[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+   static u_char sip[IP_ALEN];
+   static u_char dip[IP_ALEN];
+   u_int32_t otherip, myip;
 	
-	/* get src & dst ip address */
+   /* Get source and destination  ip addresses */
    otherip = libnet_name2addr4(libnet, dest_ip, LIBNET_RESOLVE);
    memcpy(dip, (char*)&otherip, IP_ALEN);
 	
-	myip = libnet_name2addr4(libnet, source_ip, LIBNET_RESOLVE);
+   myip = libnet_name2addr4(libnet, source_ip, LIBNET_RESOLVE);
    memcpy(sip, (char*)&myip, IP_ALEN);
 	
-	/* forge arp data */
-	arp = libnet_build_arp(
-      ARPHRD_ETHER,
-      ETHERTYPE_IP,
-      ETH_ALEN, IP_ALEN,
-      ARPOP_REQUEST,
-      smac, sip,
-      dmac, dip,
-      NULL, 0,
-      libnet,
-      arp);
+   /* Forge arp data */
+   arp = libnet_build_arp(ARPHRD_ETHER,
+                          ETHERTYPE_IP,
+                          ETH_ALEN, IP_ALEN,
+                          ARPOP_REQUEST,
+                          smac, sip,
+                          dmac, dip,
+                          NULL, 0,
+                          libnet,
+                          arp );
  
-	/* forge ethernet header */
-   eth = libnet_build_ethernet(
-      dmac, smac,
-      ETHERTYPE_ARP,
-      NULL, 0,
-      libnet,
-      eth);
+   /* Forge ethernet header */
+   eth = libnet_build_ethernet(dmac, smac,
+                               ETHERTYPE_ARP,
+                               NULL, 0,
+                               libnet,
+                               eth );
 	
-	/* Inject the packet */
+   /* Inject the packet */
    libnet_write(libnet);
 }
 

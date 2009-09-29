@@ -46,6 +46,9 @@ extern "C"
 #define SMODE_HELP 2
 #define SMODE_HOST 3
 
+/* Known Hosts highlight color */
+#define KNOWN_COLOR "\33[42;30m%s\33[0m\n"
+
 /* Ohh no, more globals */
 struct winsize win_sz;
 char *current_network;

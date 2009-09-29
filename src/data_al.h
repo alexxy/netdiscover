@@ -63,6 +63,7 @@ struct data_registry {
    short type;                   // Paket type
    unsigned int count;           // Total pakets count
    unsigned int tlength;         // Total pakets length
+   char focused;                 // Focused (colour / bold)
    struct data_registry *next;   // Next registry
 };
 

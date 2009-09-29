@@ -100,7 +100,12 @@ void unique_print_line()
    for (j=strlen(line); j<win_sz.ws_col - 1; j++)
       strcat(line, blank);
 
-   printf("%s\n", line);
+
+   /* Print host highlighted if its known */
+   if (current_unique->focused == 0)
+      printf("%s\n", line);
+   else
+      printf(KNOWN_COLOR, line);
 }
 
 
@@ -118,7 +123,7 @@ void unique_add_registry(struct data_registry *registry)
       *new_data = *registry;
 
       unique_count.hosts++;
-      new_data->vendor = search_vendor(new_data->header->smac);
+      search_mac(new_data);
 
       first_unique = new_data;
       last_unique = new_data;
@@ -159,7 +164,7 @@ void unique_add_registry(struct data_registry *registry)
          *new_data = *registry;
 
          unique_count.hosts++;
-         new_data->vendor = search_vendor(new_data->header->smac);
+         search_mac(new_data);
 
          last_unique->next = new_data;
          last_unique = new_data;
@@ -196,7 +201,7 @@ void unique_print_header_sumary(int width)
 void unique_print_simple_header()
 {
    printf(" _____________________________________________________________________________\n");
-   printf("   IP            At MAC Address      Count  Len   MAC Vendor                   \n");
+   printf("   IP            At MAC Address      Count  Len   MAC Vendor / Hostname       \n");
    printf(" ----------------------------------------------------------------------------- \n");
 }
 

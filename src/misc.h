@@ -26,13 +26,17 @@
 #ifndef _MISC_H
 #define _MISC_H
 
+#include "data_al.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
     /* Functions */
-	char *search_vendor(unsigned char[6]);
+    char *search_vendor(unsigned char[6]);
+    int load_known_mac_table(char *);
+    void search_mac(struct data_registry *);
 	
 #ifdef __cplusplus
 }

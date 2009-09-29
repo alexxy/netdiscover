@@ -100,7 +100,11 @@ void reply_print_line()
    for (j=strlen(line); j<win_sz.ws_col - 1; j++)
       strcat(line, blank);
 
-   printf("%s\n", line);
+   /* Print host highlighted if its known */
+   if (current_reply->focused == 0)
+      printf("%s\n", line);
+   else
+      printf(KNOWN_COLOR, line);
 }
 
 
@@ -114,7 +118,7 @@ void reply_add_registry(struct data_registry *registry)
    if ( first_reply == NULL )
    {
       reply_count.hosts++;
-      registry->vendor = search_vendor(registry->header->smac);
+      search_mac(registry);
 
       first_reply = registry;
       last_reply = registry;
@@ -143,7 +147,7 @@ void reply_add_registry(struct data_registry *registry)
       if ( i != 1 ) {
 
          reply_count.hosts++;
-         registry->vendor = search_vendor(registry->header->smac);
+         search_mac(registry);
 
          last_reply->next = registry;
          last_reply = registry;
@@ -174,7 +178,7 @@ void reply_print_header(int width)
 {
    reply_print_header_sumary(width);
    printf(" _____________________________________________________________________________\n");
-   printf("   IP            At MAC Address      Count  Len   MAC Vendor                   \n");
+   printf("   IP            At MAC Address      Count  Len   MAC Vendor / Hostname       \n");
    printf(" ----------------------------------------------------------------------------- \n");
 }
 

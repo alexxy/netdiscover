@@ -1,4 +1,7 @@
 Netdiscover 0.3-beta7 (Currently working on it)
+   * Janusz Uzycki <j.uzycki@elproma.com.pl>: Known hosts list feature
+   * Janusz Uzycki <j.uzycki@elproma.com.pl>: Fix for undefined docdir
+   * Several variable naming changes
    * Autotools scripts updated
    * Fixed scroll limits
    * Fixed crash when freeing common ranges list at end of scan

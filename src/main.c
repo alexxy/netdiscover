@@ -35,9 +35,11 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <string.h>
+
 #include "ifaces.h"
 #include "screen.h"
 #include "fhandle.h"
+#include "misc.h"
 
 #define RPATH  "%s/.netdiscover/ranges"
 #define FPATH  "%s/.netdiscover/fastips"
@@ -111,6 +113,7 @@ int main(int argc, char **argv)
    int flag_scan_list = 0;
    int no_parsable_header = 0;
    char *plist = NULL;
+   char *mlist = NULL;
 
    /* Config file handling vars */
    char *home, *path;
@@ -134,7 +137,7 @@ int main(int argc, char **argv)
    sprintf(current_network, "Starting.");
 
    /* Fetch parameters */
-   while ((c = getopt(argc, argv, "i:s:r:l:n:c:F:pSfdPNLh")) != EOF)
+   while ((c = getopt(argc, argv, "i:s:r:l:m:n:c:F:pSfdPNLh")) != EOF)
    {
       switch (c)
       {
@@ -173,6 +176,11 @@ int main(int argc, char **argv)
             plist = (char *) malloc (sizeof(char) * (strlen(optarg) + 1));
             sprintf(plist, "%s", optarg);
             flag_scan_list = 1;
+            break;
+
+         case 'm':   /* Scan MACs on the given file */
+            mlist = (char *) malloc (sizeof(char) * (strlen(optarg) + 1));
+            sprintf(mlist, "%s", optarg);
             break;
 
          case  'f':  /* Enable fast mode */
@@ -260,6 +268,14 @@ int main(int argc, char **argv)
    if (flag_scan_list == 1) {
       if ((common_net = fread_list(plist)) == NULL) {
          printf("File \"%s\" containing ranges, cannot be read.\n", plist);
+         exit(1);
+      }
+   }
+
+   /* Read Mac list of known hosts */
+   if (mlist != NULL) {
+      if (load_known_mac_table(mlist) < 0) {
+         printf("File \"%s\" containing MACs and host names, cannot be read.\n", mlist);
          exit(1);
       }
    }
@@ -504,12 +520,13 @@ void usage(char *comando)
 {
    printf("Netdiscover %s [Active/passive arp reconnaissance tool]\n"
       "Written by: Jaime Penalba <jpenalbae@gmail.com>\n\n"
-      "Usage: %s [-i device] [-r range | -l file | -p] [-s time] [-n node] "
+      "Usage: %s [-i device] [-r range | -l file | -p] [-m file] [-s time] [-n node] "
       "[-c count] [-f] [-d] [-S] [-P] [-c]\n"
       "  -i device: your network device\n"
       "  -r range: scan a given range instead of auto scan. 192.168.6.0/24,/16,/8\n"
       "  -l file: scan the list of ranges contained into the given file\n"
       "  -p passive mode: do not send anything, only sniff\n"
+      "  -m file: scan the list of known MACs and host names\n"
       "  -F filter: Customize pcap filter expression (default: \"arp\")\n"
       "  -s time: time to sleep between each arp request (miliseconds)\n"
       "  -n node: last ip octet used for scanning (from 2 to 253)\n"
@@ -517,8 +534,8 @@ void usage(char *comando)
       "  -f enable fastmode scan, saves a lot of time, recommended for auto\n"
       "  -d ignore home config files for autoscan and fast mode\n"
       "  -S enable sleep time supression betwen each request (hardcore mode)\n"
-      " �-P print results in a format suitable for parsing by another program\n"
-      " �-N Do not print header. Only valid when -P is enabled.\n"
+      "  -P print results in a format suitable for parsing by another program\n"
+      "  -N Do not print header. Only valid when -P is enabled.\n"
       "  -L in parsable output mode (-P), continue listening after the active scan is completed\n\n"
       "If -r, -l or -p are not enabled, netdiscover will scan for common lan addresses.\n",
       VERSION, comando);

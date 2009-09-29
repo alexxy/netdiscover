@@ -106,7 +106,11 @@ void request_print_line()
    for (j=strlen(line); j<win_sz.ws_col - 1; j++)
       strcat(line, blank);
 
-   printf("%s\n", line);
+   /* Print host highlighted if its known */
+   if (request_current->focused == 0)
+      printf("%s\n", line);
+   else
+      printf(KNOWN_COLOR, line);
 }
 
 
@@ -120,7 +124,7 @@ void request_add_registry(struct data_registry *registry)
    if ( request_first == NULL )
    {
       request_count.hosts++;
-      registry->vendor = search_vendor(registry->header->smac);
+      search_mac(registry);
 
       request_first = registry;
       request_last = registry;
@@ -150,7 +154,7 @@ void request_add_registry(struct data_registry *registry)
       if ( i != 1 ) {
 
          request_count.hosts++;
-         registry->vendor = search_vendor(registry->header->smac);
+         search_mac(registry);
 
          request_last->next = registry;
          request_last = registry;

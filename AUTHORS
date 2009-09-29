@@ -21,4 +21,6 @@ Netdiscover includes the following contributions:
  - Debian packages and manual page by "Nicolas Weyland <ufoalien@weyland.ch>"
  - First parsable output attempt by "Marcel van der Boom <marcel@hsdev.com>"
  - Parsable output patch by "Guillaume Pratte <guillaume@guillaumepratte.net>"
+ - Known hosts list feature by "Janusz Uzycki <j.uzycki@elproma.com.pl>"
+ - Fix for undefined docdir by "Janusz Uzycki <j.uzycki@elproma.com.pl>"
 

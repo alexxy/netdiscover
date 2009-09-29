@@ -35,6 +35,7 @@ extern "C"
 #endif
 
 #include <pcap.h>
+#include <netinet/ether.h>
 #include "data_al.h"
 
    /* If system is Solaris */
@@ -49,23 +50,23 @@ extern "C"
    #endif
 
 
-   // Shitty globals
-   char *ourmac, errbuf[PCAP_ERRBUF_SIZE];
+   /* Shitty globals */
+   char errbuf[PCAP_ERRBUF_SIZE];
 
    /* Threads data structure */
    struct t_data {
-      char *disp;
-      char *sip;
-      char *filter;
-      int autos;
+      char *interface;
+      char *source_ip;
+      char *pcap_filter;
+      struct ether_addr **ignore_macs;
    };
 
-   // Sniffer/Packet processing Functions
+   /* Sniffer/Packet processing Functions */
    void *start_sniffer(void *);
    void process_arp_header(struct data_registry *, const u_char *);
    void process_packet(u_char *, struct pcap_pkthdr *, const u_char *);
 
-   // ARP Generation & Injection
+   /* ARP Generation & Injection */
    void lnet_init(char *);
    void forge_arp(char *, char *, char *);
    void lnet_destroy();

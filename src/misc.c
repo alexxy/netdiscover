@@ -27,9 +27,38 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <netinet/ether.h>
+#include "ifaces.h"
 #include "misc.h"
 #include "oui.h"
 
+
+struct ether_addr **split_mac_list(char *string)
+{
+   int x;
+   int count = 0;
+   char *aux;
+   struct ether_addr **macs;
+   const char delimiters[] = ",";
+
+   /* Count number of items in the string  */
+   for (x=0; x<strlen(string); x++)
+       if (string[x] == delimiters[0]) count++;
+   
+   macs = (struct ether_addr **) malloc (count + 2);
+   
+   /* Fill the ignore_macs list */
+   x = 0;
+   aux = strtok (string, delimiters);
+   while (aux != NULL) {
+       macs[x] = ether_aton(aux);
+       aux = strtok (NULL, delimiters);
+       x++;
+   }
+   macs[x] = NULL;
+
+   return macs;
+}
 
 char *search_vendor(unsigned char mac[6])
 {

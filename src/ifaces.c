@@ -80,14 +80,14 @@ void *start_sniffer(void *args)
    datos = (struct t_data *)args;
 
    /* Open interface */
-   descr = pcap_open_live(datos->disp, BUFSIZ, 1, PCAP_TOUT, errbuf);
+   descr = pcap_open_live(datos->interface, BUFSIZ, 1, PCAP_TOUT, errbuf);
    if(descr == NULL) {
       printf("pcap_open_live(): %s\n", errbuf);
       sighandler(0); // QUIT
    }
 
    /* Set pcap filter */
-   filter = (datos->filter == NULL) ? "arp" : datos->filter;
+   filter = (datos->pcap_filter == NULL) ? "arp" : datos->pcap_filter;
    if(pcap_compile(descr, &fp, filter, 0, 0) == -1) {
       printf("pcap_compile(): %s\n", pcap_geterr(descr));
       sighandler(0); // QUIT
@@ -171,7 +171,7 @@ void process_arp_header(struct data_registry *new_reg, const u_char* packet)
 /* Init device for libnet and get mac addr */
 void lnet_init(char *disp)
 {
-	
+   char *ourmac;
    char error[LIBNET_ERRBUF_SIZE];
    libnet = NULL;
 

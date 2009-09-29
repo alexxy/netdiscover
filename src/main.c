@@ -83,17 +83,22 @@ char *dcommon_net[] = {
 
 
 pthread_t injection, sniffer, screen, keys;
-int fastmode, pcount, node, ssleep, ignoreconf;
-long sleept;
+
+/* Command line flags */
+int flag_fast_mode;
+int flag_repeat_scan;
+int flag_network_octect;
+int flag_supress_sleep;
+int flag_ignore_files;
+int flag_auto_scan;
+long flag_sleep_time;
 
 
 /* Read control keys */
 void *keys_thread(void *arg)
 {
-    while ( 1 == 1 )
-    {
-        read_key();
-    }
+   while ( 1 == 1 )
+      read_key();
 }
 
 
@@ -101,9 +106,9 @@ void *keys_thread(void *arg)
 int main(int argc, char **argv)
 {
    int c;
-   int esniff = 0;
-   int erange = 0;
-   int elist = 0;
+   int flag_passive_mode = 0;
+   int flag_scan_range = 0;
+   int flag_scan_list = 0;
    int no_parsable_header = 0;
    char *plist = NULL;
 
@@ -112,14 +117,14 @@ int main(int argc, char **argv)
 
    struct t_data datos;
 
-   /* Some default values */
-   datos.sip = NULL;
-   datos.disp = NULL;
-   datos.filter = NULL;
-   datos.autos = 0;
-   sleept = 99;
-   node = 67;
-   pcount = 1;
+   /* Some default values for the program options.  */
+   datos.source_ip = NULL;
+   datos.interface = NULL;
+   datos.pcap_filter = NULL;
+   flag_sleep_time = 99;
+   flag_network_octect = 67;
+   flag_repeat_scan = 1;
+   flag_auto_scan = 0;
 
    /* Globals defined in screen.h */
    parsable_output = 0;
@@ -134,53 +139,53 @@ int main(int argc, char **argv)
       switch (c)
       {
          case 'i':   /* Set the interface */
-            datos.disp = (char *) malloc (sizeof(char) * (strlen(optarg) + 1));
-            sprintf(datos.disp, "%s", optarg);
+            datos.interface = (char *) malloc (sizeof(char) * (strlen(optarg) + 1));
+            sprintf(datos.interface, "%s", optarg);
             break;
 
          case 'p':   /* Enable passive mode */
-            esniff = 1;
+            flag_passive_mode = 1;
             break;
 
          case  's':  /* Set sleep time */
-            sleept = atol(optarg);
+            flag_sleep_time = atol(optarg);
             break;
 
          case  'S':  /* Enable sleep supression */
-            ssleep = 1;
+            flag_supress_sleep = 1;
             break;
 
          case  'c':  /* Set no. of times to repeat the scan */
-            pcount = atoi(optarg);
+            flag_repeat_scan = atoi(optarg);
             break;
 
          case  'n':  /* Set las used octect */
-            node = atoi(optarg);
+            flag_network_octect = atoi(optarg);
             break;
 
          case  'r':  /* Set the range to scan */
-            datos.sip = (char *) malloc (sizeof(char) * strlen(optarg) + 1);
-            sprintf(datos.sip, "%s", optarg);
-            erange = 1;
+            datos.source_ip = (char *) malloc (sizeof(char) * strlen(optarg) + 1);
+            sprintf(datos.source_ip, "%s", optarg);
+            flag_scan_range = 1;
             break;
 
          case 'l':   /* Scan ranges on the given file */
             plist = (char *) malloc (sizeof(char) * (strlen(optarg) + 1));
             sprintf(plist, "%s", optarg);
-            elist = 1;
+            flag_scan_list = 1;
             break;
 
          case  'f':  /* Enable fast mode */
-            fastmode = 1;
+            flag_fast_mode = 1;
             break;
 
          case 'F':  /* Edit pcap filter */
-            datos.filter = (char *) malloc (sizeof(char) * (strlen(optarg) + 1));
-            sprintf(datos.filter, "%s", optarg);
+            datos.pcap_filter = (char *) malloc (sizeof(char) * (strlen(optarg) + 1));
+            sprintf(datos.pcap_filter, "%s", optarg);
             break;
 
          case 'd':   /* Ignore home config files */
-            ignoreconf = 1;
+            flag_ignore_files = 1;
             break;
 
          case 'P':   /* Produces parsable output (vs interactive screen) */
@@ -221,11 +226,11 @@ int main(int argc, char **argv)
    }
 
    /* If no iface was specified, autoselect one. exit, if no one available */
-   if (datos.disp == NULL)
+   if (datos.interface == NULL)
    {
-      datos.disp = pcap_lookupdev(errbuf);
+      datos.interface = pcap_lookupdev(errbuf);
 
-      if (datos.disp == NULL)
+      if (datos.interface == NULL)
       {
          printf("Couldn't find default device: %s\n", errbuf);
          exit(1);
@@ -239,7 +244,7 @@ int main(int argc, char **argv)
    path = (char *) malloc (sizeof(char) * (strlen(home) + strlen(RPATH) + 1));
    sprintf(path, RPATH, home);
 
-   if (((common_net = fread_list(path)) == NULL) || (ignoreconf == 1))
+   if (((common_net = fread_list(path)) == NULL) || (flag_ignore_files == 1))
       common_net = dcommon_net;
    free(path);
 
@@ -247,12 +252,12 @@ int main(int argc, char **argv)
    path = (char *) malloc (sizeof(char) * (strlen(home) + strlen(FPATH) + 1));
    sprintf(path, FPATH, home);
 
-   if(((fast_ips = fread_list(path)) == NULL) || (ignoreconf == 1))
+   if(((fast_ips = fread_list(path)) == NULL) || (flag_ignore_files == 1))
       fast_ips = dfast_ips;
    free(path);
 
    /* Read range list given by user if specified */
-   if (elist == 1) {
+   if (flag_scan_list == 1) {
       if ((common_net = fread_list(plist)) == NULL) {
          printf("File \"%s\" containing ranges, cannot be read.\n", plist);
          exit(1);
@@ -260,7 +265,7 @@ int main(int argc, char **argv)
    }
 
    /* Init libnet, data layers and screen */
-   lnet_init(datos.disp);
+   lnet_init(datos.interface);
    _data_reply.init();
    _data_request.init();
    _data_unique.init();
@@ -271,8 +276,8 @@ int main(int argc, char **argv)
    pthread_mutex_init(data_access, NULL);
 
    /* If no mode was selected, enable auto scan */
-   if ((erange != 1) && (esniff != 1))
-      datos.autos = 1;
+   if ((flag_scan_range != 1) && (flag_passive_mode != 1))
+      flag_auto_scan = 1;
 
    /* Start the execution */
    if (parsable_output) {
@@ -288,7 +293,7 @@ int main(int argc, char **argv)
 
    pthread_create(&sniffer, NULL, start_sniffer, (void *)&datos);
 
-   if (esniff == 1) {
+   if (flag_passive_mode == 1) {
       current_network = "(passive)";
       pthread_join(sniffer,NULL);
 
@@ -299,8 +304,8 @@ int main(int argc, char **argv)
       pthread_join(sniffer,NULL);
    }
 
-   if(datos.filter != NULL)
-	   free(datos.filter);
+   if(datos.pcap_filter != NULL)
+	   free(datos.pcap_filter);
 
    return 0;
 }
@@ -325,14 +330,14 @@ void *inject_arp(void *arg)
    sleep(2);
 
    /* Scan the given range, or start the auto scan mode */
-   if ( datos->autos != 1 ) {
-      scan_range(datos->disp, datos->sip);
+   if ( flag_auto_scan != 1 ) {
+      scan_range(datos->interface, datos->source_ip);
 
    } else {
       int x = 0;
 
       while (common_net[x] != NULL) {
-         scan_range(datos->disp, common_net[x]);
+         scan_range(datos->interface, common_net[x]);
          x++;
       }
    }
@@ -356,14 +361,14 @@ void scan_net(char *disp, char *sip)
    int x, j;
    char test[16], fromip[16];
 
-   sprintf(fromip,"%s.%i", sip, node);
+   sprintf(fromip,"%s.%i", sip, flag_network_octect);
 
    /* Repeat given times */
-   for (x=0;x<pcount;x++)
+   for (x=0; x<flag_repeat_scan; x++)
    {
 
       /* Check if fastmode is enabled */
-      if (fastmode != 1)
+      if (flag_fast_mode != 1)
       {
          for (j=1; j<255; j++)
          {
@@ -371,11 +376,11 @@ void scan_net(char *disp, char *sip)
             forge_arp(fromip, test, disp);
 
             /* Check sleep time supression */
-            if (ssleep != 1)
+            if (flag_supress_sleep != 1)
             {
                /* Sleep time */
-               if (sleept != 99)
-                  usleep(sleept * 1000);
+               if (flag_sleep_time != 99)
+                  usleep(flag_sleep_time * 1000);
                else
                   usleep(1 * 1000);
             }
@@ -392,11 +397,11 @@ void scan_net(char *disp, char *sip)
             j++;
 
             /* Check sleep time supression */
-            if (ssleep != 1)
+            if (flag_supress_sleep != 1)
             {
                /* Sleep time */
-               if (sleept != 99)
-                  usleep(sleept * 1000);
+               if (flag_sleep_time != 99)
+                  usleep(flag_sleep_time * 1000);
                else
                   usleep(1 * 1000);
             }
@@ -404,11 +409,11 @@ void scan_net(char *disp, char *sip)
       }
 
       /* If sleep supression is enabled, sleep each 255 hosts */
-      if (ssleep == 1)
+      if (flag_supress_sleep == 1)
       {
          /* Sleep time */
-         if (sleept != 99)
-            usleep(sleept * 1000);
+         if (flag_sleep_time != 99)
+            usleep(flag_sleep_time * 1000);
          else
             usleep(1 * 1000);
       }
@@ -500,7 +505,7 @@ void usage(char *comando)
    printf("Netdiscover %s [Active/passive arp reconnaissance tool]\n"
       "Written by: Jaime Penalba <jpenalbae@gmail.com>\n\n"
       "Usage: %s [-i device] [-r range | -l file | -p] [-s time] [-n node] "
-      "[-c count] [-f] [-d] [-S] [-P] [-C]\n"
+      "[-c count] [-f] [-d] [-S] [-P] [-c]\n"
       "  -i device: your network device\n"
       "  -r range: scan a given range instead of auto scan. 192.168.6.0/24,/16,/8\n"
       "  -l file: scan the list of ranges contained into the given file\n"
@@ -512,8 +517,8 @@ void usage(char *comando)
       "  -f enable fastmode scan, saves a lot of time, recommended for auto\n"
       "  -d ignore home config files for autoscan and fast mode\n"
       "  -S enable sleep time supression betwen each request (hardcore mode)\n"
-      "  -P print results in a format suitable for parsing by another program\n"
-      "  -N Do not print header. Only valid when -P is enabled.\n"
+      " ï¿½-P print results in a format suitable for parsing by another program\n"
+      " ï¿½-N Do not print header. Only valid when -P is enabled.\n"
       "  -L in parsable output mode (-P), continue listening after the active scan is completed\n\n"
       "If -r, -l or -p are not enabled, netdiscover will scan for common lan addresses.\n",
       VERSION, comando);

@@ -313,6 +313,8 @@ void fill_screen()
             "\t |     h: show this help screen                 | \n"
             "\t |     j: scroll down (or down arrow)           | \n"
             "\t |     k: scroll up   (or up arrow)             | \n"
+	    "\t |     .: scroll page up                        | \n"
+	    "\t |     ,: scroll page down                      | \n"
             "\t |     q: exit this screen or end               | \n"
             "\t |                                              | \n"
             "\t |    \33[1mScreen views\33[0m                              | \n"
@@ -325,7 +327,7 @@ void fill_screen()
 
 
 
-       for (i=24; i<win_sz.ws_row; i++)
+       for (i=26; i<win_sz.ws_row; i++)
            printf("\n");
    }
 }

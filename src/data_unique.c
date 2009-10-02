@@ -85,20 +85,21 @@ void unique_print_line()
       strcat(line, blank);
 
    /* IP & MAC */
-   sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x    ",
+   sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x  ",
       current_unique->header->smac[0], current_unique->header->smac[1],
       current_unique->header->smac[2], current_unique->header->smac[3],
       current_unique->header->smac[4], current_unique->header->smac[5]);
    strcat(line, tline);
 
    /* Count, Length & Vendor */
-   sprintf(tline, "%02d    %03d   %s", current_unique->count, 
+   sprintf(tline, "%5d  %6d  %s", current_unique->count, 
       current_unique->tlength, current_unique->vendor );
    strcat(line, tline);
 
-   /* Fill again with spaces */
+   /* Fill again with spaces and cut the string to fit width */
    for (j=strlen(line); j<win_sz.ws_col - 1; j++)
       strcat(line, blank);
+   string_cutter(line, win_sz.ws_col);
 
 
    /* Print host highlighted if its known */
@@ -178,7 +179,8 @@ void unique_add_registry(struct data_registry *registry)
    unique_count.pakets++;
    unique_count.length += registry->header->length;
 
-   if (current_unique != NULL) {
+   
+   if (parsable_output && current_unique != NULL) {
       unique_print_line();
       fflush(stdout);
    }
@@ -201,8 +203,8 @@ void unique_print_header_sumary(int width)
 void unique_print_simple_header()
 {
    printf(" _____________________________________________________________________________\n");
-   printf("   IP            At MAC Address      Count  Len   MAC Vendor / Hostname       \n");
-   printf(" ----------------------------------------------------------------------------- \n");
+   printf("   IP            At MAC Address     Count     Len  MAC Vendor / Hostname      \n");
+   printf(" -----------------------------------------------------------------------------\n");
 }
 
 void unique_print_header(int width)

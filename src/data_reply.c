@@ -96,9 +96,10 @@ void reply_print_line()
       current_reply->header->length, current_reply->vendor );
    strcat(line, tline);
 
-   /* Fill again with spaces */
+   /* Fill again with spaces and cut the string to fit width */
    for (j=strlen(line); j<win_sz.ws_col - 1; j++)
       strcat(line, blank);
+   string_cutter(line, win_sz.ws_col);
 
    /* Print host highlighted if its known */
    if (current_reply->focused == 0)
@@ -179,7 +180,7 @@ void reply_print_header(int width)
    reply_print_header_sumary(width);
    printf(" _____________________________________________________________________________\n");
    printf("   IP            At MAC Address      Count  Len   MAC Vendor / Hostname       \n");
-   printf(" ----------------------------------------------------------------------------- \n");
+   printf(" -----------------------------------------------------------------------------\n");
 }
 
 

@@ -102,9 +102,10 @@ void request_print_line()
    sprintf(tline, "%02d", request_current->count);
    strcat(line, tline);
 
-   /* Fill again with spaces */
+   /* Fill again with spaces and cut the string to fit width */
    for (j=strlen(line); j<win_sz.ws_col - 1; j++)
       strcat(line, blank);
+   string_cutter(line, win_sz.ws_col);
 
    /* Print host highlighted if its known */
    if (request_current->focused == 0)
@@ -185,8 +186,8 @@ void request_print_header(int width)
 {
    request_print_header_sumary(width);
    printf(" _____________________________________________________________________________\n");
-   printf("   IP            At MAC Address      Requests IP     Count                     \n");
-   printf(" ----------------------------------------------------------------------------- \n");
+   printf("   IP            At MAC Address      Requests IP     Count                    \n");
+   printf(" -----------------------------------------------------------------------------\n");
 }
 
 

@@ -66,6 +66,13 @@ struct ether_addr **split_mac_list(char *string)
    return macs;
 }
 
+
+void string_cutter(char *string, int size)
+{
+	string[size] = '\0';
+}
+
+
 char *search_vendor(unsigned char mac[6])
 {
 	char tmac[7];

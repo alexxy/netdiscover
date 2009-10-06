@@ -1,9 +1,11 @@
 Netdiscover 0.3-beta7 (Currently working on it)
+   * Frantisek Hanzlik <franta@hanzlici.cz>: oui script speed drastically improved
+   * Janusz Uzycki <j.uzycki@elproma.com.pl>: Scroll page up/down feature added
    * Janusz Uzycki <j.uzycki@elproma.com.pl>: Known hosts list feature
    * Janusz Uzycki <j.uzycki@elproma.com.pl>: Fix for undefined docdir
    * Several variable naming changes
    * Autotools scripts updated
-   * Fixed scroll limits
+   * Fixed scroll limits & some screen improvements
    * Fixed crash when freeing common ranges list at end of scan
    * New data abstraction layer added to handle diferent view modes
    * Included script to update oui database.

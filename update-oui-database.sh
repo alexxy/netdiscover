@@ -1,96 +1,74 @@
-#!/bin/sh
+#!/bin/bash
 
-##############################################################################
-#            update-oui-database.sh
+# Script for generation "oui.h" file (netdiscover program at
+#   http://nixgeneration.com/~jaime/netdiscover/
 #
-#  Thu Apr  3 21:18:44 CEST 2008
-#  Copyright  2008  Jaime Penalba Estebanez
-#  jpenalbae@gmail.com
-##############################################################################
-
+# Obtain data from internet source at:
+# lynx -source  http://standards.ieee.org/regauth/oui/oui.txt >oui.txt
+#
+# Syntax: oui.txt2oui.h_netdiscover
+#
+# Script generate src/oui.h file.
+#
+# 16-May-2009 Frantisek Hanzlik <franta@hanzlici.cz>
+#**********************************************************************
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 3 of the License, or
 #  (at your option) any later version.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-#
 
+JA=${0##*/}
+DATE=$(date +'%Y%m%d')
+ORIGF=oui.txt
+DSTD=src
+DSTF=oui.h
+URL="http://standards.ieee.org/regauth/oui/oui.txt"
+TMPF=$ORIGF-$DATE
+AWK="gawk"
+#AWK="mawk"
+#AWK="awk"
 
-TOUTFILE=oui.h
-DESTFILE=src/oui.h
-
-# Check we are on base dir
-if [ ! -f $DESTFILE ]
-then
-   echo "This script must be run at base dir. Exiting."
-   exit 1
-fi
-
-
-# Download updated oui.txt file
-if [ ! -f oui.txt ]
-then
-   wget "http://standards.ieee.org/regauth/oui/oui.txt"
-fi
-
-# Check if download is ok
-if [ ! -f oui.txt ]
-then
-   echo "Download failed. Exiting."
-   exit 1
-else
-   echo "Download OK. Generating oui.h, it may take some time."
-fi
-
-
-# Include header
-printf "/*
- * Organizationally Unique Identifier list - `date`
- * Automatically generated from http://standards.ieee.org/regauth/oui/oui.txt
- * For Netdiscover by Jaime Penalba
- *
- */\n\n" > $TOUTFILE
-
-# Include oui struct
-printf "struct oui {
-   char *prefix;   /* 24 bit global prefix */
-   char *vendor;   /* Vendor id string     */
-};\n\n" >> $TOUTFILE
-
-# Main data structure
-printf "struct oui oui_table[] = {\n" >> $TOUTFILE
-
-# Add each vendor
-cat oui.txt | grep "(base 16)" | while read LINE
-do
-   MAC=`echo $LINE | awk '{ print $1 }'`
-   VENDOR=`echo $LINE | awk '{ print $4 " " $5 " " $6 " " $7 }' | sed 's/[ \t]*$//' | sed "s/\"/'/g"`
-
-   if [ "X$VENDOR" == "X" ]
-   then
-      VENDOR="PRIVATE"
+[ -d "$DSTD" ] || { echo "$JA: Destdir \"$DSTD\" not exist!"; exit 1; }
+if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
+   echo "Trying download \"$ORIGF\" with lynx..."
+   if ! lynx -source $URL >"$TMPF"; then
+      echo "Trying download \"$ORIGF\" with elinks..."
+      if ! elinks -source $URL >"$TMPF"; then
+         echo "Trying download \"$ORIGF\" with wget..."
+         if ! wget --quiet --output-document="$TMPF" $URL; then
+            echo "$JA: Cann't obtain \"$URL\"!"
+            exit 1
+         fi
+      fi
    fi
+else
+   echo "\"$TMPF\" already exist, skipping download..."
+fi
+echo "Process oui.txt (\"$TMPF\")..."
+# if RS is null string, then records are separated by blank lines... but this isn't true in oui.txt :
+cat "$TMPF"|tee aaa|LANG=C $AWK --re-interval --assign URL="$URL" 'BEGIN{RS="\n([[:blank:]]*\n)+";FS="\n";MI="";NN=0;
+ printf "/*\n * Organizationally Unique Identifier list at date %s\n * Automatically generated from %s\n * For Netdiscover by Jaime Penalba\n *\n */\n\nstruct oui {\n   char *prefix;   /* 24 bit global prefix */\n   char *vendor;   /* Vendor id string     */\n};\n\nstruct oui oui_table[] = {\n",strftime("%d-%b-%Y"),URL
+}
+(/[[:xdigit:]]{6}/){
+    N1=split($1,A1,/\t+/)
+    N2=split($2,A2,/\t+/)
+    N3=split(A2[1],PN,/ +/)
+#    printf "%i,%i,%i>%s<>%s<>%s< $1=%s<, $2=%s<, $3=%s<.\n",N1,N2,N3,PN[1],A1[2],A2[2],$1,$2,$3
+#    V1=gensub(/^[[:punct:]]+/,"",1,A1[2])
+#    V2=gensub(/^[[:punct:]]+/,"",1,A2[2])
+    V1=gensub(/^[[:blank:]]+/,"",1,A1[2])
+    V2=gensub(/^[[:blank:]]+/,"",1,A2[2])
+    V0=V2; if (V0 ~ /^[[:blank:]]*$/){ V0=V1 }
+    V=gensub(/\"/,"\\\\\"","g",V0)
+    if (MI !="")printf "   { \"%s\", \"%s\" },\n",MI,MV
+    MI=PN[1]; MV=V; NN++
+}
+END{printf "   { \"%s\", \"%s\" },\n   { NULL, NULL }\n};\n\n// Total %i items.\n",MI,MV,NN}' >"$DSTD/$DSTF"
 
-   printf "   { \"$MAC\", \"$VENDOR\" },\n" >> $TOUTFILE
-done
-
-# End of data structure
-printf "   { NULL, NULL }\n};\n\n" >> $TOUTFILE
-
-
-# Write new file
-mv -f $DESTFILE ${DESTFILE}.old
-mv $TOUTFILE $DESTFILE
-
-echo "Generation complete. Please check $DESTFILE before compiling"
-echo "Exiting."
-exit 0
+if [ $? -ne 0 ]; then
+  echo "$JA: $TMPF parsing error !"; exit 1
+else
+  echo "All OK"
+fi

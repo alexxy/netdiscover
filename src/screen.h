@@ -47,7 +47,8 @@ extern "C"
 #define SMODE_HOST 3
 
 /* Known Hosts highlight color */
-#define KNOWN_COLOR "\33[42;30m%s\33[0m\n"
+//#define KNOWN_COLOR "\33[42;30m%s\33[0m\n"
+#define KNOWN_COLOR "\33[1m%s\33[0m\n"
 
 /* Ohh no, more globals */
 struct winsize win_sz;

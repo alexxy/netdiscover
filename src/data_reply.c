@@ -85,21 +85,22 @@ void reply_print_line()
       strcat(line, blank);
 
    /* IP & MAC */
-   sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x    ",
+   sprintf(tline, "%02x:%02x:%02x:%02x:%02x:%02x  ",
       current_reply->header->smac[0], current_reply->header->smac[1],
       current_reply->header->smac[2], current_reply->header->smac[3],
       current_reply->header->smac[4], current_reply->header->smac[5]);
    strcat(line, tline);
 
    /* Count, Length & Vendor */
-   sprintf(tline, "%02d    %03d   %s", current_reply->count, 
+   sprintf(tline, "%5d %7d  %s", current_reply->count,
       current_reply->header->length, current_reply->vendor );
    strcat(line, tline);
+
 
    /* Fill again with spaces and cut the string to fit width */
    for (j=strlen(line); j<win_sz.ws_col - 1; j++)
       strcat(line, blank);
-   string_cutter(line, win_sz.ws_col);
+   string_cutter(line, win_sz.ws_col - 1 );
 
    /* Print host highlighted if its known */
    if (current_reply->focused == 0)
@@ -179,7 +180,7 @@ void reply_print_header(int width)
 {
    reply_print_header_sumary(width);
    printf(" _____________________________________________________________________________\n");
-   printf("   IP            At MAC Address      Count  Len   MAC Vendor / Hostname       \n");
+   printf("   IP            At MAC Address     Count     Len  MAC Vendor / Hostname      \n");
    printf(" -----------------------------------------------------------------------------\n");
 }
 

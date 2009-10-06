@@ -305,29 +305,26 @@ void fill_screen()
    } else if(smode == SMODE_HELP) {
       int i;
 
-      printf("\n"
-            "\t  ______________________________________________  \n"
-            "\t |                                              | \n"
-            "\t |    \33[1mUsage Keys\33[0m                                | \n"
-            "\t |                                              | \n"
-            "\t |     h: show this help screen                 | \n"
-            "\t |     j: scroll down (or down arrow)           | \n"
-            "\t |     k: scroll up   (or up arrow)             | \n"
-	    "\t |     .: scroll page up                        | \n"
-	    "\t |     ,: scroll page down                      | \n"
-            "\t |     q: exit this screen or end               | \n"
-            "\t |                                              | \n"
-            "\t |    \33[1mScreen views\33[0m                              | \n"
-            "\t |                                              | \n"
-            "\t |     a: show arp replys list                  | \n"
-            "\t |     r: show arp requests list                | \n"
-            "\t |     u: show unique hosts detected            | \n"
-            "\t |                                              | \n"
-            "\t  ----------------------------------------------  \n");
+      printf("\t  ______________________________________________  \n"
+             "\t |                                              | \n"
+             "\t |    \33[1mUsage Keys\33[0m                                | \n"
+             "\t |     h: show this help screen                 | \n"
+             "\t |     j: scroll down (or down arrow)           | \n"
+             "\t |     k: scroll up   (or up arrow)             | \n"
+	     "\t |     .: scroll page up                        | \n"
+	     "\t |     ,: scroll page down                      | \n"
+             "\t |     q: exit this screen or end               | \n"
+             "\t |                                              | \n"
+             "\t |    \33[1mScreen views\33[0m                              | \n"
+             "\t |     a: show arp replys list                  | \n"
+             "\t |     r: show arp requests list                | \n"
+             "\t |     u: show unique hosts detected            | \n"
+             "\t |                                              | \n"
+             "\t  ----------------------------------------------  \n");
 
 
 
-       for (i=26; i<win_sz.ws_row; i++)
+       for (i=25; i<win_sz.ws_row; i++)
            printf("\n");
    }
 }

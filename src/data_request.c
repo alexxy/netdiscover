@@ -99,13 +99,13 @@ void request_print_line()
       strcat(line, blank);
 
    /* Count, Length & Vendor */
-   sprintf(tline, "%02d", request_current->count);
+   sprintf(tline, "%5d", request_current->count);
    strcat(line, tline);
 
    /* Fill again with spaces and cut the string to fit width */
    for (j=strlen(line); j<win_sz.ws_col - 1; j++)
       strcat(line, blank);
-   string_cutter(line, win_sz.ws_col);
+   string_cutter(line, win_sz.ws_col - 1);
 
    /* Print host highlighted if its known */
    if (request_current->focused == 0)
@@ -186,7 +186,7 @@ void request_print_header(int width)
 {
    request_print_header_sumary(width);
    printf(" _____________________________________________________________________________\n");
-   printf("   IP            At MAC Address      Requests IP     Count                    \n");
+   printf("   IP            At MAC Address      Requests IP      Count                   \n");
    printf(" -----------------------------------------------------------------------------\n");
 }
 

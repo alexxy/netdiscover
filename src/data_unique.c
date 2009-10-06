@@ -92,14 +92,14 @@ void unique_print_line()
    strcat(line, tline);
 
    /* Count, Length & Vendor */
-   sprintf(tline, "%5d  %6d  %s", current_unique->count, 
+   sprintf(tline, "%5d %7d  %s", current_unique->count,
       current_unique->tlength, current_unique->vendor );
    strcat(line, tline);
 
    /* Fill again with spaces and cut the string to fit width */
    for (j=strlen(line); j<win_sz.ws_col - 1; j++)
       strcat(line, blank);
-   string_cutter(line, win_sz.ws_col);
+   string_cutter(line, win_sz.ws_col - 1);
 
 
    /* Print host highlighted if its known */

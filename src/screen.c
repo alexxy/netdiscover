@@ -137,7 +137,7 @@ int scroll_limit()
 /* Read input keys */
 void read_key()
 {
-   int ch;
+   int ch, i;
    ch = getchar();
 
    /* Check for arrow keys */
@@ -160,6 +160,16 @@ void read_key()
       case 106:               // Scroll down
          if (scroll_limit() > 1)
             scroll++;
+         break;
+      case ',':               // Scroll page up
+         for (i = 0; i < win_sz.ws_row - 7; i++)
+            if (scroll > 0)
+                scroll--;
+         break;
+      case '.':               // Scroll page down
+         for (i = 0; i < win_sz.ws_row - 7; i++)
+            if (scroll_limit() > 1)
+                scroll++;
          break;
       case 114:               // Show requests view
          smode = SMODE_REQUEST;

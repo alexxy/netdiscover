@@ -29,7 +29,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
-#include <libnet.h>
+
+#include <arpa/inet.h>
 
 #include "screen.h"
 #include "ifaces.h"
@@ -64,8 +65,8 @@
 
 
 /* Shitty globals */
-libnet_t *libnet;
-unsigned char smac[ETH_ALEN];
+pcap_t *inject;
+unsigned char smac[] = { 0xCA, 0xFE, 0xCA, 0xFE, 0xCA, 0xFE };
 struct p_header *temp_header;
 
 
@@ -168,25 +169,21 @@ void process_arp_header(struct data_registry *new_reg, const u_char* packet)
             packet[38], packet[39], packet[40], packet[41]);
 }
 
-/* Init device for libnet and get mac addr */
-void lnet_init(char *disp)
+/* Init device for libpcap and get mac addr */
+void inject_init(char *disp)
 {
    char *ourmac;
-   char error[LIBNET_ERRBUF_SIZE];
-   libnet = NULL;
+   char loc_errbuf[PCAP_ERRBUF_SIZE];
 
-   /* Init libnet */
-   libnet = libnet_init(LIBNET_LINK, disp, error);
-   if (libnet == NULL) {
-      printf("libnet_init() falied: %s", error);
-      exit(EXIT_FAILURE);
+   /* Open interface for injection */
+   inject = pcap_open_live(disp, BUFSIZ, 1, PCAP_TOUT, loc_errbuf);
+   if(inject == NULL) {
+      printf("pcap_open_live(): %s\n", loc_errbuf);
+      exit(1);
    }
 
    /* Get our mac addr */
    if (ourmac == NULL) {
-      struct libnet_ether_addr *mymac;
-      mymac = libnet_get_hwaddr(libnet);
-      memcpy(smac, mymac, ETH_ALEN);
 
       ourmac = (char *) malloc (sizeof(char) * 18);
       sprintf(ourmac, "%02x:%02x:%02x:%02x:%02x:%02x",
@@ -197,47 +194,43 @@ void lnet_init(char *disp)
 }
 
 
-/* Forge Arp Packet, using libnet */
+/* Forge Arp Packet, using libpcap */
 void forge_arp(char *source_ip, char *dest_ip, char *disp)
 {
-   static libnet_ptag_t arp = 0;
-   static libnet_ptag_t eth = 0;
-   static u_char dmac[ETH_ALEN] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-   static u_char sip[IP_ALEN];
-   static u_char dip[IP_ALEN];
-   u_int32_t otherip, myip;
+   in_addr_t sip, dip;
+
+	char raw_arp[] =
+		"\xff\xff\xff\xff\xff\xff" // mac destination
+		"\x00\x00\x00\x00\x00\x00" // mac source
+		"\x08\x06"                 // type
+		"\x00\x01"                 // hw type
+		"\x08\x00"                 // protocol type
+		"\x06"                     // hw size
+		"\x04"                     // protocol size
+		"\x00\x01"                 // opcode
+		"\x00\x00\x00\x00\x00\x00" // sender mac
+		"\x00\x00\x00\x00"         // sender ip
+		"\xff\xff\xff\xff\xff\xff" // target mac
+		"\x00\x00\x00\x00";        // target ip
+
+   /* get src & dst ip address */
+   dip = inet_addr(dest_ip);
+   sip = inet_addr(source_ip);
 	
-   /* Get source and destination  ip addresses */
-   otherip = libnet_name2addr4(libnet, dest_ip, LIBNET_RESOLVE);
-   memcpy(dip, (char*)&otherip, IP_ALEN);
-	
-   myip = libnet_name2addr4(libnet, source_ip, LIBNET_RESOLVE);
-   memcpy(sip, (char*)&myip, IP_ALEN);
-	
-   /* Forge arp data */
-   arp = libnet_build_arp(ARPHRD_ETHER,
-                          ETHERTYPE_IP,
-                          ETH_ALEN, IP_ALEN,
-                          ARPOP_REQUEST,
-                          smac, sip,
-                          dmac, dip,
-                          NULL, 0,
-                          libnet,
-                          arp );
- 
-   /* Forge ethernet header */
-   eth = libnet_build_ethernet(dmac, smac,
-                               ETHERTYPE_ARP,
-                               NULL, 0,
-                               libnet,
-                               eth );
-	
-   /* Inject the packet */
-   libnet_write(libnet);
+	memcpy(raw_arp + 28, (char*) &sip, IP_ALEN);
+	memcpy(raw_arp + 38, (char*) &dip, IP_ALEN);
+
+	/* set mac addr */
+	memcpy(raw_arp + 6,  smac, ETH_ALEN);
+	memcpy(raw_arp + 22, smac, ETH_ALEN);
+
+	/* Inject the packet */
+	pcap_sendpacket(inject, (unsigned char *)raw_arp, sizeof(raw_arp) - 1);
+
 }
 
 
-void lnet_destroy()
+void inject_destroy()
 {
-	libnet_destroy(libnet);
+	pcap_close(inject);
 }

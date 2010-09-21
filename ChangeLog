@@ -1,4 +1,5 @@
 Netdiscover 0.3-beta7 (Currently working on it)
+   * Emanuele Acri <crossbower@gmail.com>: Libnet injection replaced by pcap
    * Frantisek Hanzlik <franta@hanzlici.cz>: oui script speed drastically improved
    * Janusz Uzycki <j.uzycki@elproma.com.pl>: Scroll page up/down feature added
    * Janusz Uzycki <j.uzycki@elproma.com.pl>: Known hosts list feature

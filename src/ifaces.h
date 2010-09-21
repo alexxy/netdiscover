@@ -67,9 +67,9 @@ extern "C"
    void process_packet(u_char *, struct pcap_pkthdr *, const u_char *);
 
    /* ARP Generation & Injection */
-   void lnet_init(char *);
+   void inject_init(char *);
    void forge_arp(char *, char *, char *);
-   void lnet_destroy();
+   void inject_destroy();
 
 #ifdef __cplusplus
 }

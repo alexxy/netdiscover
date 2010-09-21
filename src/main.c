@@ -281,7 +281,7 @@ int main(int argc, char **argv)
    }
 
    /* Init libnet, data layers and screen */
-   lnet_init(datos.interface);
+   inject_init(datos.interface);
    _data_reply.init();
    _data_request.init();
    _data_unique.init();
@@ -361,7 +361,7 @@ void *inject_arp(void *arg)
    /* Wait for last arp replys and mark as scan finished */
    sleep(2);
    sprintf(current_network, "Finished!");
-   lnet_destroy();
+   inject_destroy();
 
    /* If parseable output is enabled, print end and exit */
    if(parsable_output)

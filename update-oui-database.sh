@@ -10,7 +10,8 @@
 #
 # Script generate src/oui.h file.
 #
-# 16-May-2009 Frantisek Hanzlik <franta@hanzlici.cz>
+# 16-May-2009 Frantisek Hanzlik <franta@hanzlici.cz> (Original author)
+# 07-Jun-2001 Larry Reznick <lreznick@rezfam.com> (fixes & code clean)
 #**********************************************************************
 #
 #  This program is free software; you can redistribute it and/or modify

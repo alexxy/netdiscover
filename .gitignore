@@ -1,6 +1,7 @@
 /autom4te.cache
 /config.status
 /build-aux
+/build
 /config.log
 /Makefile.in
 /stamp-h1

@@ -43,7 +43,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc ChangeLog README AUTHORS INSTALL NEWS TODO
+%doc ChangeLog README AUTHORS INSTALL TODO
 %dir %{_sbindir}/netdiscover
 %dir %{_mandir}
 %{_mandir}/*

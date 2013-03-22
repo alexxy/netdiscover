@@ -8,7 +8,6 @@ doc_DATA = \
         COPYING\
         AUTHORS\
         ChangeLog\
-        NEWS\
         TODO
 
 EXTRA_DIST = \

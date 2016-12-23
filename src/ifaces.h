@@ -35,7 +35,14 @@ extern "C"
 #endif
 
 #include <pcap.h>
-#include <netinet/ether.h>
+
+/* If system is Mac OS X */
+#ifdef __APPLE__
+   #include <netinet/if_ether.h>
+#else
+   #include <netinet/ether.h>
+#endif
+
 #include "data_al.h"
 
    /* If system is Solaris */

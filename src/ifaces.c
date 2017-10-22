@@ -32,6 +32,10 @@
 
 #include <arpa/inet.h>
 
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <net/if_arp.h>
+
 #include "screen.h"
 #include "ifaces.h"
 #include "data_al.h"
@@ -66,7 +70,7 @@
 
 /* Shitty globals */
 pcap_t *inject;
-unsigned char smac[] = { 0xCA, 0xFE, 0xCA, 0xFE, 0xCA, 0xFE };
+unsigned char smac[ETH_ALEN];
 struct p_header *temp_header;
 
 
@@ -184,11 +188,37 @@ void inject_init(char *disp)
 
    /* Get our mac addr */
    if (ourmac == NULL) {
+      struct ifreq ifr;
+      size_t if_name_len=strlen(disp);
+      if (if_name_len<sizeof(ifr.ifr_name)) {
+          memcpy(ifr.ifr_name,disp,if_name_len);
+          ifr.ifr_name[if_name_len]=0;
+      } else {
+          printf("interface name is too long");
+          exit(1);
+      }
 
-      ourmac = (char *) malloc (sizeof(char) * 18);
-      sprintf(ourmac, "%02x:%02x:%02x:%02x:%02x:%02x",
-            smac[0], smac[1], smac[2],
-            smac[3], smac[4], smac[5]);
+      int fd=socket(AF_UNIX,SOCK_DGRAM,0);
+      if (fd==-1) {
+          printf("%s",strerror(errno));
+          exit(1);
+      }
+
+      if (ioctl(fd,SIOCGIFHWADDR,&ifr)==-1) {
+         int temp_errno=errno;
+         close(fd);
+         printf("%s",strerror(temp_errno));
+         exit(1);
+      }
+      close(fd);
+
+      if (ifr.ifr_hwaddr.sa_family!=ARPHRD_ETHER) {
+          printf("not an Ethernet interface");
+          exit(1);
+      }
+
+      unsigned char* mac=(unsigned char*)ifr.ifr_hwaddr.sa_data;
+      memcpy(smac, mac, ETH_ALEN);
    }
 
 }

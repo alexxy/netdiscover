@@ -27,7 +27,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <netinet/ether.h>
+
+/* If system is Mac OS X */
+#ifdef __APPLE__
+   #include <netinet/if_ether.h>
+#else
+   #include <netinet/ether.h>
+#endif
 
 #include "ifaces.h"
 #include "fhandle.h"

@@ -1,0 +1,28 @@
+==== INSTALLATION FOR MAC OS X 10.11.4 ====
+
+0. INSTALL HOMEBREW
+
+Install Homebrew from: http://brew.sh/
+
+1. INSTALL CMAKE
+
+Install Cmake using Homebrew:
+  brew install cmake
+
+2. INSTALL LIBPCAP
+
+Install Libpcap using Homebrew:
+   brew install libpcap
+
+3. INSTALL LIBNET
+
+Install Libnet using Homebrew:
+   brew install libnet
+
+4. BUILD AND INSTALL NETDISCOVER
+ After installing all the requirement, run the following commands to build Netdiscover:
+   cmake .
+   make
+   make install
+
+The executable should be available in "/usr/local/sbin/" directory

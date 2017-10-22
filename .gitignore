@@ -11,3 +11,7 @@
 /aclocal.m4
 /Makefile
 /.ChangeLog.swp
+CMakeFiles
+*.cmake
+CMakeCache.txt
+install_manifest.txt

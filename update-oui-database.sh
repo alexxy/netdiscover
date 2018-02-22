@@ -49,7 +49,7 @@ AWK="gawk"
 #fi
 if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
   echo -n "Trying download \"$ORIGF\" with lynx..."
-  if [[ -x $(lynx) ]]; then
+  if [[ -x $(which lynx) ]]; then
     lynx -source $URL >"$TMPF"
   else
      echo -n " with elinks..."

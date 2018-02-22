@@ -27,10 +27,14 @@ DSTD=src
 DSTF=oui.h
 URL="http://standards.ieee.org/regauth/oui/oui.txt"
 TMPF=$ORIGF-$DATE
-AWK="gawk"
-#AWK="mawk"
-#AWK="awk"
 
+if [[ -x  $(which gawk) ]]; then
+  AWK="gawk"
+elif [[ -x $(which mawk) ]]; then
+  AWK="mawk"
+else
+  AWK="awk"
+fi
 [ -d "$DSTD" ] || { echo "$JA: Destdir \"$DSTD\" not exist!"; exit 1; }
 #if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
 #   echo "Trying download \"$ORIGF\" with lynx..."

@@ -27,13 +27,13 @@ DSTD=src
 DSTF=oui.h
 URL="http://standards.ieee.org/regauth/oui/oui.txt"
 TMPF=$ORIGF-$DATE
+AWK=$(which gawk)
 
-if [[ -x  $(which gawk) ]]; then
-  AWK="gawk"
-elif [[ -x $(which mawk) ]]; then
-  AWK="mawk"
-else
-  AWK="awk"
+if ! [[ -x $AWK ]]; then
+  echo "[!] Error: gawk not found!"
+  echo "This script requires gawk. Try 'sudo apt-get install gawk' for Linux or 'brew install gawk' for Mac OS"
+  echo 
+  exit 1
 fi
 [ -d "$DSTD" ] || { echo "$JA: Destdir \"$DSTD\" not exist!"; exit 1; }
 #if ! [ -f "$TMPF" -a -s "$TMPF" ]; then

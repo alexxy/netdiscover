@@ -36,6 +36,11 @@
 #include <net/if.h>
 #include <net/if_arp.h>
 
+#ifdef __APPLE__
+#include <ifaddrs.h>
+#include <net/if_dl.h>
+#endif
+
 #include "screen.h"
 #include "ifaces.h"
 #include "data_al.h"
@@ -64,8 +69,6 @@
 #define ARPOP_REQUEST 1
 #define ARPOP_REPLY 2
 #endif
-
-
 
 
 /* Shitty globals */
@@ -173,6 +176,37 @@ void process_arp_header(struct data_registry *new_reg, const u_char* packet)
             packet[38], packet[39], packet[40], packet[41]);
 }
 
+#ifdef __APPLE__
+void get_mac(char *dev, unsigned char *mac)
+{
+    struct ifaddrs *if_addrs, *if_addr;
+    void *tmp = NULL;
+    char buf[INET6_ADDRSTRLEN];
+
+    if (getifaddrs(&if_addrs) != 0)
+    {
+        return;
+    }
+
+    for (if_addr = if_addrs; if_addr != NULL; if_addr = if_addr->ifa_next)
+    {
+        if (if_addr->ifa_addr != NULL && if_addr->ifa_addr->sa_family == AF_LINK && 
+            strcmp(dev, if_addr->ifa_name) == 0)
+        {
+            struct sockaddr_dl *sdl = (struct sockaddr_dl *)if_addr->ifa_addr;
+
+            if (6 == sdl->sdl_alen)
+            {
+                memcpy(mac, LLADDR(sdl), sdl->sdl_alen);
+                break;
+            }            
+        }
+    }
+
+    return;
+}
+#endif /* __APPLE__ */
+
 /* Init device for libpcap and get mac addr */
 void inject_init(char *disp)
 {
@@ -186,6 +220,9 @@ void inject_init(char *disp)
       exit(1);
    }
 
+#ifdef __APPLE__
+   get_mac(disp, smac);
+#else
    /* Get our mac addr */
    if (ourmac == NULL) {
       struct ifreq ifr;
@@ -220,6 +257,7 @@ void inject_init(char *disp)
       unsigned char* mac=(unsigned char*)ifr.ifr_hwaddr.sa_data;
       memcpy(smac, mac, ETH_ALEN);
    }
+#endif
 
 }
 

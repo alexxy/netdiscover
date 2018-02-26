@@ -27,10 +27,14 @@ DSTD=src
 DSTF=oui.h
 URL="http://standards.ieee.org/regauth/oui/oui.txt"
 TMPF=$ORIGF-$DATE
-AWK="gawk"
-#AWK="mawk"
-#AWK="awk"
+AWK=$(which gawk)
 
+if ! [[ -x $AWK ]]; then
+  echo "[!] Error: gawk not found!"
+  echo "This script requires gawk. Try 'sudo apt-get install gawk' for Linux or 'brew install gawk' for Mac OS"
+  echo 
+  exit 1
+fi
 [ -d "$DSTD" ] || { echo "$JA: Destdir \"$DSTD\" not exist!"; exit 1; }
 #if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
 #   echo "Trying download \"$ORIGF\" with lynx..."
@@ -49,15 +53,15 @@ AWK="gawk"
 #fi
 if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
   echo -n "Trying download \"$ORIGF\" with lynx..."
-  if [[ -x /usr/bin/lynx ]]; then
+  if [[ -x $(which lynx) ]]; then
     lynx -source $URL >"$TMPF"
   else
      echo -n " with elinks..."
-     if [[ -x /usr/bin/elinks ]]; then
+     if [[ -x $(which elinks) ]]; then
        elinks -source $URL >"$TMPF"
      else
         echo " with wget..."
-        if [[ -x /usr/bin/wget ]]; then
+        if [[ -x $(which wget) ]]; then
           wget --quiet --output-document="$TMPF" $URL
         else
            echo "$JA: Can't obtain \"$URL\"!"

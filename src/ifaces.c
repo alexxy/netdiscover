@@ -65,7 +65,10 @@
 #define ARPOP_REPLY 2
 #endif
 
-
+#ifdef __APPLE__
+#define SIOCGIFHWADDR SIOCGIFCONF
+#define ifr_hwaddr ifr_addr
+#endif
 
 
 /* Shitty globals */

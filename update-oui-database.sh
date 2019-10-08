@@ -25,7 +25,7 @@ DATE=$(date +'%Y%m%d')
 ORIGF=oui.txt
 DSTD=src
 DSTF=oui.h
-URL="http://standards.ieee.org/regauth/oui/oui.txt"
+URL="http://standards-oui.ieee.org/oui.txt"
 TMPF=$ORIGF-$DATE
 AWK="gawk"
 #AWK="mawk"
@@ -125,7 +125,7 @@ END {
 	  "};\n" \
 	  "\n" \
 	  "// Total %i items.\n", MI, MV, NN);
-}' <"$TMPF" >"$DSTD/$DSTF"
+}' | sed -e "s/ ^M//" | sed -e "s/^M//" > "$DSTD/$DSTF"
 
 if [ $? -ne 0 ]; then
   echo "$JA: $TMPF parsing error !"

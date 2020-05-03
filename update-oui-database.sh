@@ -20,7 +20,8 @@
 #  (at your option) any later version.
 #
 
-JA=${0##*/}
+set -euo pipefail
+
 DATE=$(date +'%Y%m%d')
 ORIGF=oui.txt
 DSTD=src

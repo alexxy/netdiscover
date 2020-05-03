@@ -78,7 +78,6 @@ BEGIN {
 (/^[[:alnum:]]{6}\s+/){
 	a=$1
 	$1=""
-	# printf("<%s>\n", $0)
 	b = gensub(/[^[:print:]]/, "","g",$0)
 	b = gensub(/ \(base 16\)\s*(.+)/,"\\1", "g", b)
 	printf("   { \"%s\", \"%s\" },\n", a, b);

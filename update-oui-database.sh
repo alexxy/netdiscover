@@ -64,7 +64,7 @@ if ! type "gawk" > /dev/null; then
 	exit 1
 fi
 
-LANG=C $AWK --re-interval --assign URL="$URL" '
+LANG=C gawk --assign URL=${URL} '
 BEGIN {
 	RS = "\n([[:blank:]]*\n)+";
 	FS = "\n";

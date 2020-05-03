@@ -23,14 +23,11 @@
 set -euo pipefail
 
 DATE=$(date +'%Y%m%d')
-ORIGF=oui.txt
-DSTD=src
-DSTF=oui.h
+ORIGF="oui.txt"
+DSTD="src"
+DSTF="oui.h"
 URL="http://standards-oui.ieee.org/oui.txt"
-TMPF=$ORIGF-$DATE
-AWK="gawk"
-#AWK="mawk"
-#AWK="awk"
+TMPF="${ORIGF}-${DATE}"
 
 [ -d "$DSTD" ] || { echo "$JA: Destdir \"$DSTD\" not exist!"; exit 1; }
 #if ! [ -f "$TMPF" -a -s "$TMPF" ]; then

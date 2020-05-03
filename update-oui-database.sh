@@ -29,22 +29,12 @@ DSTF="oui.h"
 URL="http://standards-oui.ieee.org/oui.txt"
 TMPF="${ORIGF}-${DATE}"
 
-[ -d "$DSTD" ] || { echo "$JA: Destdir \"$DSTD\" not exist!"; exit 1; }
-#if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
-#   echo "Trying download \"$ORIGF\" with lynx..."
-#   if ! lynx -source $URL >"$TMPF"; then
-#      echo "Trying download \"$ORIGF\" with elinks..."
-#      if ! elinks -source $URL >"$TMPF"; then
-#         echo "Trying download \"$ORIGF\" with wget..."
-#         if ! wget --quiet --output-document="$TMPF" $URL; then
-#            echo "$JA: Cann't obtain \"$URL\"!"
-#            exit 1
-#         fi
-#      fi
-#   fi
-#else
-#   echo "\"$TMPF\" already exist, skipping download..."
-#fi
+if [ ! -d ${DSTD} ] 
+then
+    echo "Directory ${DSTD} does not exist." 
+    exit 1
+fi
+
 if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
   echo "Trying download \"$ORIGF\" with lynx..."
   if type "lynx" > /dev/null; then

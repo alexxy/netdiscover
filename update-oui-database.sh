@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script for generation "oui.h" file netdiscover 
+# Script for generation "oui.h" file netdiscover
 
 # Syntax: oui.txt2oui.h_netdiscover
 #
@@ -22,38 +22,37 @@ DSTF="oui.h"
 URL="http://standards-oui.ieee.org/oui.txt"
 TMPF="${ORIGF}-${DATE}"
 
-if [ ! -d ${DSTD} ] 
-then
-    echo "Directory ${DSTD} does not exist." 
-    exit 1
+if [ ! -d ${DSTD} ]; then
+	echo "Directory ${DSTD} does not exist."
+	exit 1
 fi
 
 if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
-  echo "Trying download \"$ORIGF\" with lynx..."
-  if type "lynx" > /dev/null; then
-    lynx -source $URL >"$TMPF"
-  else
-     echo " with elinks..."
-     if type "elinks" > /dev/null; then
-       elinks -source $URL >"$TMPF"
-     else
-        echo " with wget..."
-        if type "wget" > /dev/null; then
-          wget --quiet --output-document="$TMPF" $URL
-        else
-           echo "Can't obtain \"$URL\"!"
-           exit 1
-        fi
-     fi
-  fi
+	echo "Trying download \"$ORIGF\" with lynx..."
+	if type "lynx" >/dev/null; then
+		lynx -source $URL >"$TMPF"
+	else
+		echo " with elinks..."
+		if type "elinks" >/dev/null; then
+			elinks -source $URL >"$TMPF"
+		else
+			echo " with wget..."
+			if type "wget" >/dev/null; then
+				wget --quiet --output-document="$TMPF" $URL
+			else
+				echo "Can't obtain \"$URL\"!"
+				exit 1
+			fi
+		fi
+	fi
 else
-   echo "\"$TMPF\" already exist, skipping download..."
+	echo "\"$TMPF\" already exist, skipping download..."
 fi
 
 echo "processing oui.txt (\"${TMPF}\")..."
 
-if ! type "gawk" > /dev/null; then
-  echo "gawk does not exist"
+if ! type "gawk" >/dev/null; then
+	echo "gawk does not exist"
 	exit 1
 fi
 
@@ -92,12 +91,12 @@ END {
 	  "// Total %i items.\n", NN);
 }
 
-' ${TMPF} > src/oui.h
+' ${TMPF} >src/oui.h
 
 if [ $? -ne 0 ]; then
-  echo "$JA: $TMPF parsing error !"
-  exit 1
+	echo "$JA: $TMPF parsing error !"
+	exit 1
 else
-  echo "All OK"
-  ls -oh oui.txt-* src/oui.h
+	echo "All OK"
+	ls -oh oui.txt-* src/oui.h
 fi

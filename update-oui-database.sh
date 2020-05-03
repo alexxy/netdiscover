@@ -1,17 +1,10 @@
 #!/bin/bash
 
-# Script for generation "oui.h" file (netdiscover program at
-#   http://nixgeneration.com/~jaime/netdiscover/
-#
-# Obtain data from internet source at:
-# lynx -source  http://standards.ieee.org/regauth/oui/oui.txt >oui.txt
-#
+# Script for generation "oui.h" file netdiscover 
+
 # Syntax: oui.txt2oui.h_netdiscover
 #
 # Script generate src/oui.h file.
-#
-# 16-May-2009 Frantisek Hanzlik <franta@hanzlici.cz> (Original author)
-# 07-Jun-2001 Larry Reznick <lreznick@rezfam.com> (fixes & code clean)
 #**********************************************************************
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -66,15 +59,12 @@ fi
 
 LANG=C gawk --assign URL=${URL} '
 BEGIN {
-	RS = "\n([[:blank:]]*\n)+";
-	FS = "\n";
-	MI = "";
 	NN = 0;
 	printf( \
 	  "/*\n" \
 	  " * Organizationally Unique Identifier list at date %s\n" \
 	  " * Automatically generated from %s\n" \
-	  " * For Netdiscover by Jaime Penalba\n" \
+	  " * For Netdiscover\n" \
 	  " *\n" \
 	  " */\n" \
 	  "\n" \
@@ -85,36 +75,25 @@ BEGIN {
 	  "\n" \
 	  "struct oui oui_table[] = {\n", strftime("%d-%b-%Y"), URL);
 }
-
-(/[[:xdigit:]]{6}/) {
-	N1 = split($1,A1,/\t+/);
-	N2 = split($2,A2,/\t+/);
-	N3 = split(A2[1],PN,/ +/);
-#	printf("%i,%i,%i>%s<>%s<>%s< $1=%s<, $2=%s<, $3=%s<.\n",N1,N2,N3,PN[1],A1[2],A2[2],$1,$2,$3);
-#	V1 = gensub(/^[[:punct:]]+/,"",1,A1[2]);
-#	V2 = gensub(/^[[:punct:]]+/,"",1,A2[2]);
-	V1 = gensub(/^[[:blank:]]+/,"",1,A1[2]);
-	V2 = gensub(/^[[:blank:]]+/,"",1,A2[2]);
-	V0 = V2;
-	if (V0 ~ /^[[:blank:]]*$/) {
-		V0 = V1;
-	}
-	V = gensub(/\"/,"\\\\\"","g",V0);
-	if (MI != "")
-		printf("   { \"%s\", \"%s\" },\n", MI, MV);
-	MI = PN[1];
-	MV = V;
+(/^[[:alnum:]]{6}\s+/){
+	a=$1
+	$1=""
+	# printf("<%s>\n", $0)
+	b = gensub(/[^[:print:]]/, "","g",$0)
+	b = gensub(/ \(base 16\)\s*(.+)/,"\\1", "g", b)
+	printf("   { \"%s\", \"%s\" },\n", a, b);
 	NN++;
 }
 
 END {
 	printf( \
-	  "   { \"%s\", \"%s\" },\n" \
 	  "   { NULL, NULL }\n" \
 	  "};\n" \
 	  "\n" \
-	  "// Total %i items.\n", MI, MV, NN);
-}' | sed -e "s/ ^M//" | sed -e "s/^M//" > "$DSTD/$DSTF"
+	  "// Total %i items.\n", NN);
+}
+
+' ${TMPF} > src/oui.h
 
 if [ $? -ne 0 ]; then
   echo "$JA: $TMPF parsing error !"

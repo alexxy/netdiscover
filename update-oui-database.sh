@@ -48,32 +48,33 @@ AWK="gawk"
 #   echo "\"$TMPF\" already exist, skipping download..."
 #fi
 if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
-  echo -n "Trying download \"$ORIGF\" with lynx..."
-  if [[ -x /usr/bin/lynx ]]; then
+  echo "Trying download \"$ORIGF\" with lynx..."
+  if type "lynx" > /dev/null; then
     lynx -source $URL >"$TMPF"
   else
-     echo -n " with elinks..."
-     if [[ -x /usr/bin/elinks ]]; then
+     echo " with elinks..."
+     if type "elinks" > /dev/null; then
        elinks -source $URL >"$TMPF"
      else
         echo " with wget..."
-        if [[ -x /usr/bin/wget ]]; then
+        if type "wget" > /dev/null; then
           wget --quiet --output-document="$TMPF" $URL
         else
-           echo "$JA: Can't obtain \"$URL\"!"
+           echo "Can't obtain \"$URL\"!"
            exit 1
         fi
      fi
   fi
 else
-   echo -n "\"$TMPF\" already exist, skipping download..."
+   echo "\"$TMPF\" already exist, skipping download..."
 fi
-echo ""
 
-echo "Process oui.txt (\"$TMPF\")..."
+echo "processing oui.txt (\"${TMPF}\")..."
 
-# if RS is null string, then records are separated by blank lines...
-# but this isn't true in oui.txt
+if ! type "gawk" > /dev/null; then
+  echo "gawk does not exist"
+	exit 1
+fi
 
 LANG=C $AWK --re-interval --assign URL="$URL" '
 BEGIN {

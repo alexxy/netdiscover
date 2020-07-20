@@ -1,17 +1,10 @@
 #!/bin/bash
 
-# Script for generation "oui.h" file (netdiscover program at
-#   http://nixgeneration.com/~jaime/netdiscover/
-#
-# Obtain data from internet source at:
-# lynx -source  http://standards.ieee.org/regauth/oui/oui.txt >oui.txt
-#
+# Script for generation "oui.h" file netdiscover
+
 # Syntax: oui.txt2oui.h_netdiscover
 #
 # Script generate src/oui.h file.
-#
-# 16-May-2009 Frantisek Hanzlik <franta@hanzlici.cz> (Original author)
-# 07-Jun-2001 Larry Reznick <lreznick@rezfam.com> (fixes & code clean)
 #**********************************************************************
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -20,72 +13,57 @@
 #  (at your option) any later version.
 #
 
-JA=${0##*/}
+set -euo pipefail
+
 DATE=$(date +'%Y%m%d')
-ORIGF=oui.txt
-DSTD=src
-DSTF=oui.h
+ORIGF="oui.txt"
+DSTD="src"
+DSTF="oui.h"
 URL="http://standards-oui.ieee.org/oui.txt"
-TMPF=$ORIGF-$DATE
-AWK="gawk"
-#AWK="mawk"
-#AWK="awk"
+TMPF="${ORIGF}-${DATE}"
 
-[ -d "$DSTD" ] || { echo "$JA: Destdir \"$DSTD\" not exist!"; exit 1; }
-#if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
-#   echo "Trying download \"$ORIGF\" with lynx..."
-#   if ! lynx -source $URL >"$TMPF"; then
-#      echo "Trying download \"$ORIGF\" with elinks..."
-#      if ! elinks -source $URL >"$TMPF"; then
-#         echo "Trying download \"$ORIGF\" with wget..."
-#         if ! wget --quiet --output-document="$TMPF" $URL; then
-#            echo "$JA: Cann't obtain \"$URL\"!"
-#            exit 1
-#         fi
-#      fi
-#   fi
-#else
-#   echo "\"$TMPF\" already exist, skipping download..."
-#fi
-if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
-  echo -n "Trying download \"$ORIGF\" with lynx..."
-  if [[ -x /usr/bin/lynx ]]; then
-    lynx -source $URL >"$TMPF"
-  else
-     echo -n " with elinks..."
-     if [[ -x /usr/bin/elinks ]]; then
-       elinks -source $URL >"$TMPF"
-     else
-        echo " with wget..."
-        if [[ -x /usr/bin/wget ]]; then
-          wget --quiet --output-document="$TMPF" $URL
-        else
-           echo "$JA: Can't obtain \"$URL\"!"
-           exit 1
-        fi
-     fi
-  fi
-else
-   echo -n "\"$TMPF\" already exist, skipping download..."
+if [ ! -d ${DSTD} ]; then
+	echo "Directory ${DSTD} does not exist."
+	exit 1
 fi
-echo ""
 
-echo "Process oui.txt (\"$TMPF\")..."
+if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
+	echo "Trying download \"$ORIGF\" with lynx..."
+	if type "lynx" >/dev/null; then
+		lynx -source $URL >"$TMPF"
+	else
+		echo " with elinks..."
+		if type "elinks" >/dev/null; then
+			elinks -source $URL >"$TMPF"
+		else
+			echo " with wget..."
+			if type "wget" >/dev/null; then
+				wget --quiet --output-document="$TMPF" $URL
+			else
+				echo "Can't obtain \"$URL\"!"
+				exit 1
+			fi
+		fi
+	fi
+else
+	echo "\"$TMPF\" already exist, skipping download..."
+fi
 
-# if RS is null string, then records are separated by blank lines...
-# but this isn't true in oui.txt
+echo "processing oui.txt (\"${TMPF}\")..."
 
-LANG=C $AWK --re-interval --assign URL="$URL" '
+if ! type "gawk" >/dev/null; then
+	echo "gawk does not exist"
+	exit 1
+fi
+
+LANG=C gawk --assign URL=${URL} '
 BEGIN {
-	RS = "\n([[:blank:]]*\n)+";
-	FS = "\n";
-	MI = "";
 	NN = 0;
 	printf( \
 	  "/*\n" \
 	  " * Organizationally Unique Identifier list at date %s\n" \
 	  " * Automatically generated from %s\n" \
-	  " * For Netdiscover by Jaime Penalba\n" \
+	  " * For Netdiscover\n" \
 	  " *\n" \
 	  " */\n" \
 	  "\n" \
@@ -96,41 +74,29 @@ BEGIN {
 	  "\n" \
 	  "struct oui oui_table[] = {\n", strftime("%d-%b-%Y"), URL);
 }
-
-(/[[:xdigit:]]{6}/) {
-	N1 = split($1,A1,/\t+/);
-	N2 = split($2,A2,/\t+/);
-	N3 = split(A2[1],PN,/ +/);
-#	printf("%i,%i,%i>%s<>%s<>%s< $1=%s<, $2=%s<, $3=%s<.\n",N1,N2,N3,PN[1],A1[2],A2[2],$1,$2,$3);
-#	V1 = gensub(/^[[:punct:]]+/,"",1,A1[2]);
-#	V2 = gensub(/^[[:punct:]]+/,"",1,A2[2]);
-	V1 = gensub(/^[[:blank:]]+/,"",1,A1[2]);
-	V2 = gensub(/^[[:blank:]]+/,"",1,A2[2]);
-	V0 = V2;
-	if (V0 ~ /^[[:blank:]]*$/) {
-		V0 = V1;
-	}
-	V = gensub(/\"/,"\\\\\"","g",V0);
-	if (MI != "")
-		printf("   { \"%s\", \"%s\" },\n", MI, MV);
-	MI = PN[1];
-	MV = V;
+(/^[[:alnum:]]{6}\s+/){
+	a=$1
+	$1=""
+	b = gensub(/[^[:print:]]/, "","g",$0)
+	b = gensub(/ \(base 16\)\s*(.+)/,"\\1", "g", b)
+	printf("   { \"%s\", \"%s\" },\n", a, b);
 	NN++;
 }
 
 END {
 	printf( \
-	  "   { \"%s\", \"%s\" },\n" \
 	  "   { NULL, NULL }\n" \
 	  "};\n" \
 	  "\n" \
-	  "// Total %i items.\n", MI, MV, NN);
-}' | sed -e "s/ ^M//" | sed -e "s/^M//" > "$DSTD/$DSTF"
+	  "// Total %i items.\n", NN);
+}
+
+' ${TMPF} >src/oui.h
 
 if [ $? -ne 0 ]; then
-  echo "$JA: $TMPF parsing error !"
-  exit 1
+	echo "$JA: $TMPF parsing error !"
+	exit 1
 else
-  echo "All OK"
-  ls -oh oui.txt-* src/oui.h
+	echo "All OK"
+	ls -oh oui.txt-* src/oui.h
 fi

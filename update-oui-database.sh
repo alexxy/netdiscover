@@ -40,8 +40,13 @@ if ! [ -f "$TMPF" -a -s "$TMPF" ]; then
 			if type "wget" >/dev/null; then
 				wget --quiet --output-document="$TMPF" $URL
 			else
-				echo "Can't obtain \"$URL\"!"
-				exit 1
+				echo " with curl..."
+				if type "curl" >/dev/null; then
+					curl -o "$TMPF" $URL
+				else
+					echo "Can't obtain \"$URL\" because none of the supported tools is available!"
+					exit 1
+				fi
 			fi
 		fi
 	fi
